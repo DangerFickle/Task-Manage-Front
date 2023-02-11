@@ -217,10 +217,7 @@ export default {
       })
     },
     resetData() {
-      this.searchCourse.courseName = ''
-      this.searchCourse.description = ''
-      this.searchCourse.creatorName = ''
-      this.searchCourse.modifierName = ''
+      this.resetSearchCourse()
       this.fetchCourseData(1)
     },
     handleEdit(id) {
@@ -229,13 +226,13 @@ export default {
         this.course.id = data.id
         this.course.courseName = data.courseName
         this.course.description = data.description
+        this.addOrUpdateDialogVisible = true
       }).catch(error => {
         console.log(error)
       })
-      this.addOrUpdateDialogVisible = true
     },
     handleAdd() {
-      this.course = {} // 清空course对象
+      this.resetCourse()
       this.addOrUpdateDialogVisible = true
     },
     handleDelete(row) {
@@ -286,6 +283,7 @@ export default {
           type: response.code === 800 ? 'error' : 'success',
           message: response.msg
         })
+        // this.resetCourse()
       }).catch(error => {
         console.log(error)
       })
@@ -337,6 +335,17 @@ export default {
         })
       }).catch(error => {
       })
+    },
+    resetCourse() {
+      this.course.id = ''
+      this.course.courseName = ''
+      this.course.description = ''
+    },
+    resetSearchCourse() {
+      this.searchCourse.courseName = ''
+      this.searchCourse.description = ''
+      this.searchCourse.creatorName = ''
+      this.searchCourse.modifierName = ''
     }
   }
 }

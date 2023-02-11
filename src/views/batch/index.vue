@@ -316,21 +316,19 @@ export default {
         this.pageInfo.page = page
       }
       batchApi.getBatchListPage(this.searchBatch, this.pageInfo.page, this.pageInfo.pageSize).then(response => {
-        const {data} = response
+        const { data } = response
         this.pageInfo.total = data.total
         this.pageInfo.page = data.current
         this.batchList = data.records
       })
     },
     resetData() {
-      this.searchBatch.batchName = ''
-      this.searchBatch.description = ''
-      this.searchBatch.creatorName = ''
-      this.searchBatch.modifierName = ''
+      this.resetSearchBatch()
       this.fetchBatchData(1)
     },
     handleAdd() {
-      this.batch = {}
+      // 重置batch
+      this.resetBatch()
       // 打开添加对话框时，重新拉取课程列表
       this.getCourseList()
       this.addOrUpdateDialogVisible = true
@@ -364,8 +362,7 @@ export default {
           type: response.code === 800 ? 'error' : 'success',
           message: response.msg
         })
-      }).catch(error => {
-      })
+      }).catch(() => {})
     },
     updateBatch() {
       batchApi.updateBatch(this.batch).then(response => {
@@ -377,9 +374,8 @@ export default {
         })
         // 重置batch对象，清空所有属性中的值
         // 不可以直接将batch赋值为空对象，这会失去响应式，导致绑定属性的表单元素无法输入
-        this.resetBatch()
-      }).catch(error => {
-      })
+        // this.resetBatch()
+      }).catch(() => {})
     },
     handleDelete(row) {
       this.$confirm(`确认删除 <${row.batchName}> 批次吗？此操作不可逆！`, '警告', {
@@ -419,6 +415,12 @@ export default {
       this.batch.description = ''
       this.batch.belongCourseId = ''
       this.batch.endTime = ''
+    },
+    resetSearchBatch() {
+      this.searchBatch.batchName = ''
+      this.searchBatch.description = ''
+      this.searchBatch.creatorName = ''
+      this.searchBatch.modifierName = ''
     }
   }
 }
