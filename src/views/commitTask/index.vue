@@ -6,13 +6,18 @@
       <div class="tools-div" style="margin-bottom: 10px">
         <el-form label-width="70px" size="medium" style="margin: 10px 0 -15px 0">
           <el-row>
-            <el-col :span="5">
+            <el-col
+              :sm="10"
+              :md="10"
+              :lg="6"
+              :xl="5"
+            >
               <el-form-item label="选择课程">
                 <el-select
                   v-model="searchBatch.belongCourseId"
                   filterable
-                  placeholder="请选择课程(必选)"
-                  style="width: 300px"
+                  placeholder="请先选择一个课程(必选)"
+                  style="width: 100%"
                   size="medium"
                   @change="changeSelect"
                 >
@@ -49,14 +54,19 @@
         <el-table-column
           prop="batchName"
           label="批次名称"
+          align="center"
+          :width="flexColumnWidth(batchList, '批次名称', 'batchName')"
         />
         <el-table-column
           prop="description"
           label="批次描述"
+          align="center"
+          :width="flexColumnWidth(batchList, '批次描述', 'description')"
         />
         <el-table-column
           prop="belongCourseName"
           label="所属课程"
+          align="center"
         />
         <!--        <el-table-column label="状态" width="70">-->
         <!--          <template slot-scope="scope">-->
@@ -67,10 +77,38 @@
         <!--          </template>-->
         <!--        </el-table-column>-->
 
+
+
+        <el-table-column
+          label="截至时间"
+          align="center"
+        >
+          <template v-slot="scope">
+            {{ scope.row.endTime === '1970-01-01 00:00:00' ? '永不截止' : scope.row.endTime }}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          prop="tag"
+          label="截至状态"
+          width="80"
+          align="center"
+        >
+          <template slot-scope="scope">
+            <el-tag
+              :type="scope.row.isEnd === 0 ? 'success' : 'danger'"
+              disable-transitions
+            >
+              {{ scope.row.isEnd === 0 ? '未截止' : '已截止' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
         <el-table-column
           prop="tag"
           label="提交状态"
           width="80"
+          align="center"
         >
           <template slot-scope="scope">
             <el-tag
@@ -84,36 +122,14 @@
         </el-table-column>
 
         <el-table-column
-          label="截至时间"
-          width="160"
-        >
-          <template v-slot="scope">
-            {{ scope.row.endTime === '1970-01-01 00:00:00' ? '永不截止' : scope.row.endTime }}
-          </template>
-        </el-table-column>
-
-        <el-table-column
-          prop="tag"
-          label="截至状态"
-          width="80"
-        >
-          <template slot-scope="scope">
-            <el-tag
-              :type="scope.row.isEnd === 0 ? 'success' : 'danger'"
-              disable-transitions
-            >
-              {{ scope.row.isEnd === 0 ? '未截止' : '已截止' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-
-        <el-table-column
           label="操作"
           align="center"
+          width="120"
         >
           <!-- isEnd为1时禁用，为0时可用 -->
           <template v-slot="scope">
             <el-button
+              type="primary"
               v-if="scope.row.isCommit === 0"
               size="small"
               icon="el-icon-upload2"
@@ -152,7 +168,7 @@
     <el-dialog
       title="上传作业"
       :visible.sync="updateDialogVisible"
-      width="500px"
+      width="450px"
       style="text-align: center"
     >
       <el-upload
@@ -166,7 +182,7 @@
         :auto-upload="true"
         action=""
       >
-        <i class="el-icon-upload"/>
+        <i class="el-icon-upload" />
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
         <div slot="tip" class="el-upload__tip" style="font-size: 15px">上传的文件不得超过20MB！</div>
       </el-upload>
@@ -178,9 +194,11 @@
 import taskApi from '@/api/task'
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
+import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
 
 export default {
   name: 'CommitTask',
+  mixins: [flexColumnWidthFN],
   data() {
     return {
       pageInfo: {

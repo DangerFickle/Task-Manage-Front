@@ -4,8 +4,14 @@
     <el-row>
       <div class="search-div">
         <el-form label-width="70px" size="medium">
-          <el-row>
-            <el-col :span="6">
+          <el-row
+            :gutter="20"
+          >
+            <el-col
+              :md="11"
+              :lg="6"
+              :xl="5"
+            >
               <el-form-item label="课程名称">
                 <el-input
                   v-model.trim="searchCourse.courseName"
@@ -14,7 +20,11 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="6" style="margin-left: 10px">
+            <el-col
+              :md="{ span: 11, offset: 1 }"
+              :lg="{span: 6, pull: 1}"
+              :xl="{span: 5, pull: 1}"
+            >
               <el-form-item label="课程描述">
                 <el-input
                   v-model.trim="searchCourse.description"
@@ -23,27 +33,33 @@
                 />
               </el-form-item>
             </el-col>
-          </el-row>
 
-          <el-row>
-            <el-col :span="6">
-              <el-form-item label="创建者">
+            <el-col
+              :md="11"
+              :lg="{ span: 6, pull: 1 }"
+              :xl="{span: 5, pull: 1}"
+            >
+              <el-form-item label="创建人">
                 <el-input
                   v-model.trim="searchCourse.creatorName"
                   style="width: 100%"
-                  placeholder="请输入课程创建者(选填)"
+                  placeholder="请输入课程创建人(选填)"
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="6">
-              <el-form-item label="修改者">
-                <el-input
-                  v-model.trim="searchCourse.modifierName"
-                  style="width: 100%"
-                  placeholder="请输入课程修改者(选填)"
-                />
-              </el-form-item>
-            </el-col>
+          </el-row>
+
+          <el-row>
+
+            <!--            <el-col :span="6">-->
+            <!--              <el-form-item label="修改者">-->
+            <!--                <el-input-->
+            <!--                  v-model.trim="searchCourse.modifierName"-->
+            <!--                  style="width: 200px"-->
+            <!--                  placeholder="请输入课程修改者(选填)"-->
+            <!--                />-->
+            <!--              </el-form-item>-->
+            <!--            </el-col>-->
           </el-row>
 
           <el-row style="display:flex">
@@ -69,7 +85,7 @@
         style="margin-top: 20px"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" />
+        <el-table-column type="selection"/>
         <el-table-column
           label="序号"
           width="70"
@@ -82,26 +98,38 @@
         <el-table-column
           prop="courseName"
           label="课程名称"
-          width="200"
+          align="center"
+          :width="flexColumnWidth(courseList, '课程名称', 'courseName')"
+
         />
         <el-table-column
           prop="description"
           label="课程描述"
+          align="center"
+          :width="flexColumnWidth(courseList, '课程描述', 'description')"
+
         />
         <el-table-column
           prop="creatorName"
-          label="创建者"
-          width="100"
+          label="创建人"
+          align="center"
         />
         <el-table-column
           prop="modifierName"
-          label="修改者"
-          width="100"
+          label="修改人"
+          align="center"
         />
-        <el-table-column label="状态" width="61">
+
+        <el-table-column
+          label="状态"
+          width="61"
+          align="center"
+        >
           <template slot-scope="scope">
             <el-switch
-              v-model="scope.row.status === 1"
+              :value="scope.row.status === 1"
+              inactive-color="#ff4949"
+              active-color="#13ce66"
               @change="switchStatus(scope.row)"
             />
           </template>
@@ -110,16 +138,17 @@
         <el-table-column
           prop="createTime"
           label="创建时间"
-          width="200"
+          align="center"
         />
         <el-table-column
           prop="updateTime"
           label="修改时间"
-          width="200"
+          align="center"
         />
         <el-table-column
           label="操作"
           align="center"
+          width="240"
         >
           <template v-slot="scope">
             <el-button
@@ -152,13 +181,13 @@
       />
     </el-row>
 
-    <el-dialog title="添加/修改" :visible.sync="addOrUpdateDialogVisible" width="30%">
+    <el-dialog title="添加/修改" :visible.sync="addOrUpdateDialogVisible" width="400px" center style="margin: 40px">
       <el-form ref="dataForm" :model="course" label-width="100px" size="small" style="padding-right: 40px;">
-        <el-form-item label="课程名称" prop="courseName">
-          <el-input v-model.trim="course.courseName" />
+        <el-form-item label="课程名称:" prop="courseName">
+          <el-input v-model.trim="course.courseName"/>
         </el-form-item>
-        <el-form-item label="课程描述" prop="description">
-          <el-input v-model.trim="course.description" />
+        <el-form-item label="课程描述:" prop="description">
+          <el-input v-model.trim="course.description"/>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -166,15 +195,18 @@
         <el-button type="primary" icon="el-icon-check" size="small" @click="saveOrUpdate()">确 定</el-button>
       </span>
     </el-dialog>
+
   </div>
 
 </template>
 
 <script>
 import courseApi from '@/api/course'
+import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
 
 export default {
   name: 'Course',
+  mixins: [flexColumnWidthFN],
   data() {
     return {
       pageInfo: {
@@ -208,7 +240,7 @@ export default {
         this.pageInfo.page = page
       }
       courseApi.getCourseListPage(this.searchCourse, this.pageInfo.page, this.pageInfo.pageSize).then(response => {
-        const { data } = response
+        const {data} = response
         this.pageInfo.total = data.total
         this.pageInfo.page = data.current
         this.courseList = data.records
@@ -222,7 +254,7 @@ export default {
     },
     handleEdit(id) {
       courseApi.getCourseById(id).then(response => {
-        const { data } = response
+        const {data} = response
         this.course.id = data.id
         this.course.courseName = data.courseName
         this.course.description = data.description
@@ -252,7 +284,8 @@ export default {
         }).catch(error => {
           console.log(error)
         })
-      }).catch(error => {})
+      }).catch(error => {
+      })
     },
     // 切换课程的可用性
     switchStatus(row) {

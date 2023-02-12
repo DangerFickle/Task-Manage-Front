@@ -4,31 +4,47 @@
     <el-row>
       <div class="search-div">
         <el-form label-width="70px" size="medium">
-          <el-row>
-            <el-col :span="6">
+          <el-row
+            :gutter="20"
+          >
+            <el-col
+              :md="11"
+              :lg="6"
+              :xl="5"
+            >
               <el-form-item label="批次名称">
                 <el-input v-model="searchBatch.batchName" style="width: 100%" placeholder="请输入批次名称(选填)"/>
               </el-form-item>
             </el-col>
-            <el-col :span="6" style="marxgin-left: 10p">
+            <el-col
+              :md="{ span: 11, offset: 1 }"
+              :lg="{span: 6, pull: 1}"
+              :xl="{span: 5, pull: 1}"
+            >
               <el-form-item label="批次描述">
                 <el-input v-model="searchBatch.description" style="width: 100%" placeholder="请输入批次描述(选填)"/>
               </el-form-item>
             </el-col>
-          </el-row>
 
-          <el-row>
-            <el-col :span="6">
+            <el-col
+              :md="11"
+              :lg="{ span: 6, pull: 1 }"
+              :xl="{span: 5, pull: 1}"
+            >
               <el-form-item label="创建人">
                 <el-input v-model="searchBatch.creatorName" style="width: 100%" placeholder="请输入批次创建者(选填)"/>
               </el-form-item>
             </el-col>
-            <el-col :span="6">
-              <el-form-item label="修改人">
-                <el-input v-model="searchBatch.modifierName" style="width: 100%" placeholder="请输入批次修改者(选填)"/>
-              </el-form-item>
-            </el-col>
           </el-row>
+
+<!--          <el-row>-->
+
+            <!--            <el-col :span="6">-->
+            <!--              <el-form-item label="修改人">-->
+            <!--                <el-input v-model="searchBatch.modifierName" style="width: 100%" placeholder="请输入批次修改者(选填)"/>-->
+            <!--              </el-form-item>-->
+            <!--            </el-col>-->
+<!--          </el-row>-->
 
           <el-row style="display:flex">
             <el-button type="primary" icon="el-icon-search" size="small" @click="fetchBatchData()">搜索</el-button>
@@ -43,7 +59,12 @@
         <!--        <el-button type="danger" icon="el-icon-delete" size="small" @click="handleDeleteByIds()">批量删除</el-button>-->
         <el-form label-width="70px" size="medium" style="margin: 10px 0 -10px 0">
           <el-row>
-            <el-col :span="5">
+            <el-col
+              :sm="10"
+              :md="10"
+              :lg="6"
+              :xl="5"
+            >
               <el-form-item label="所属课程">
                 <el-select
                   v-model="searchBatch.belongCourseId"
@@ -76,7 +97,7 @@
         style="margin-top: 0px"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection"/>
+        <!-- <el-table-column type="selection"/> -->
         <el-table-column
           label="序号"
           width="50"
@@ -88,21 +109,29 @@
         <el-table-column
           prop="batchName"
           label="批次名称"
-          width="200"
+          align="center"
+          :width="flexColumnWidth(batchList, '批次名称', 'batchName')"
+
         />
         <el-table-column
           prop="description"
           label="批次描述"
+          align="center"
+          :width="flexColumnWidth(batchList, '批次描述', 'description')"
         />
         <el-table-column
           prop="belongCourseName"
           label="所属课程"
-          width="200"
+          align="center"
+          :width="flexColumnWidth(batchList, '所属课程', 'belongCourseName')"
+
         />
-        <el-table-column label="可用状态" width="80">
+        <el-table-column label="可用状态" width="80" align="center">
           <template slot-scope="scope">
             <el-switch
               :value="scope.row.isEnd === 0"
+              inactive-color="#ff4949"
+              active-color="#13ce66"
               @change="switchStatus(scope.row)">
             </el-switch>
           </template>
@@ -110,34 +139,37 @@
         <el-table-column
           prop="creatorName"
           label="创建人"
-          width="100"
+          align="center"
         />
         <el-table-column
           prop="modifierName"
           label="修改人"
-          width="100"
+          align="center"
         />
         <el-table-column
           prop="createTime"
           label="创建时间"
-          width="200"
+          align="center"
         />
+
+        <el-table-column
+          prop="updateTime"
+          label="修改时间"
+          align="center"
+        />
+
         <el-table-column
           label="截至时间"
-          width="200"
+          align="center"
         >
           <template v-slot="scope">
             {{ scope.row.endTime === "1970-01-01 00:00:00" ? '永不截止' : scope.row.endTime }}
           </template>
         </el-table-column>
         <el-table-column
-          prop="updateTime"
-          label="修改时间"
-          width="200"
-        />
-        <el-table-column
           label="操作"
           align="center"
+          width="200"
         >
           <template v-slot="scope">
             <el-button
@@ -177,17 +209,17 @@
       />
     </el-row>
 
-    <el-dialog title="添加/修改" :visible.sync="addOrUpdateDialogVisible" width="30%">
+    <el-dialog title="添加/修改" :visible.sync="addOrUpdateDialogVisible" width="450px" center>
       <el-form ref="dataForm" :model="batch" label-width="100px" size="small" style="padding-right: 40px;">
-        <el-form-item label="批次名称" prop="batchName">
+        <el-form-item label="批次名称:" prop="batchName">
           <el-input v-model.trim="batch.batchName"/>
         </el-form-item>
 
-        <el-form-item label="批次描述" prop="description">
+        <el-form-item label="批次描述:" prop="description">
           <el-input v-model.trim="batch.description"/>
         </el-form-item>
 
-        <el-form-item label="所属课程" prop="belongCourseId">
+        <el-form-item label="所属课程:" prop="belongCourseId">
           <el-select
             v-model.trim="batch.belongCourseId"
             filterable
@@ -204,7 +236,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="截止时间" prop="endTime">
+        <el-form-item label="截止时间:" prop="endTime">
           <el-date-picker
             v-model="batch.endTime"
             type="datetime"
@@ -229,9 +261,11 @@
 <script>
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
+import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
 
 export default {
   name: 'Batch',
+  mixins: [flexColumnWidthFN],
   data() {
     return {
       pickerOptions: {
@@ -316,7 +350,7 @@ export default {
         this.pageInfo.page = page
       }
       batchApi.getBatchListPage(this.searchBatch, this.pageInfo.page, this.pageInfo.pageSize).then(response => {
-        const { data } = response
+        const {data} = response
         this.pageInfo.total = data.total
         this.pageInfo.page = data.current
         this.batchList = data.records
@@ -362,7 +396,8 @@ export default {
           type: response.code === 800 ? 'error' : 'success',
           message: response.msg
         })
-      }).catch(() => {})
+      }).catch(() => {
+      })
     },
     updateBatch() {
       batchApi.updateBatch(this.batch).then(response => {
@@ -375,7 +410,8 @@ export default {
         // 重置batch对象，清空所有属性中的值
         // 不可以直接将batch赋值为空对象，这会失去响应式，导致绑定属性的表单元素无法输入
         // this.resetBatch()
-      }).catch(() => {})
+      }).catch(() => {
+      })
     },
     handleDelete(row) {
       this.$confirm(`确认删除 <${row.batchName}> 批次吗？此操作不可逆！`, '警告', {
@@ -391,9 +427,9 @@ export default {
             type: response.code === 800 ? 'error' : 'success',
             message: response.msg
           })
-        }).catch(error => {
+        }).catch(() => {
         })
-      }).catch(error => {
+      }).catch(() => {
       })
     },
     switchStatus(row) {

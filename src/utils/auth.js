@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
 
-const TokenKey = 'job_token'
+const TokenKey = 'task_token'
 
 export function getToken() {
   return Cookies.get(TokenKey)

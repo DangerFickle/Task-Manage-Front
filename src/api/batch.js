@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-const apiHost = 'http://192.168.31.31:8888'
+const apiHost = 'http://192.168.31.110:8888'
 
 export default {
   // 获取批次列表, 分页查询
@@ -9,6 +9,13 @@ export default {
       url: `${apiHost}/batch/listPage/${page}/${pageSize}`,
       method: 'get',
       params: searchBatch
+    })
+  },
+  // 根据所属课程获取批次列表
+  getBatchListByCourseId(courseId) {
+    return request({
+      url: `${apiHost}/batch/listByCourseId/${courseId}`,
+      method: 'get'
     })
   },
   // 获取批次列表，后端判断是否已提交

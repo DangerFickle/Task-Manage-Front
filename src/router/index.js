@@ -103,13 +103,20 @@ export const exclusiveRoute = [
   {
     path: '/taskDetails',
     component: Layout,
-    name: 'taskDetails',
-    meta: {
-      title: '提交详情',
-      icon: 'el-icon-folder-checked',
-      role: ['system', 'normal']
-    }
+    children: [
+      {
+        path: 'index',
+        name: 'TaskDetails',
+        component: () => import('@/views/taskDetails/index'),
+        meta: {
+          title: '提交详情',
+          icon: 'el-icon-folder-checked',
+          role: ['system', 'normal']
+        }
+      }
+    ]
   },
+
   {
     path: '/personnelManage',
     component: Layout,
