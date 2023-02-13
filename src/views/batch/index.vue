@@ -37,14 +37,14 @@
             </el-col>
           </el-row>
 
-<!--          <el-row>-->
+          <!--          <el-row>-->
 
-            <!--            <el-col :span="6">-->
-            <!--              <el-form-item label="修改人">-->
-            <!--                <el-input v-model="searchBatch.modifierName" style="width: 100%" placeholder="请输入批次修改者(选填)"/>-->
-            <!--              </el-form-item>-->
-            <!--            </el-col>-->
-<!--          </el-row>-->
+          <!--            <el-col :span="6">-->
+          <!--              <el-form-item label="修改人">-->
+          <!--                <el-input v-model="searchBatch.modifierName" style="width: 100%" placeholder="请输入批次修改者(选填)"/>-->
+          <!--              </el-form-item>-->
+          <!--            </el-col>-->
+          <!--          </el-row>-->
 
           <el-row style="display:flex">
             <el-button type="primary" icon="el-icon-search" size="small" @click="fetchBatchData()">搜索</el-button>
@@ -57,14 +57,9 @@
       <div class="tools-div" style="margin-top: 10px; padding-bottom: 0">
         <el-button type="success" icon="el-icon-plus" size="small" @click="handleAdd()">添加批次</el-button>
         <!--        <el-button type="danger" icon="el-icon-delete" size="small" @click="handleDeleteByIds()">批量删除</el-button>-->
-        <el-form label-width="70px" size="medium" style="margin: 10px 0 -10px 0">
+        <el-form label-width="70px" inline size="medium" style="margin: 10px 0 -10px 0">
           <el-row>
-            <el-col
-              :sm="10"
-              :md="10"
-              :lg="6"
-              :xl="5"
-            >
+            <el-col>
               <el-form-item label="所属课程">
                 <el-select
                   v-model="searchBatch.belongCourseId"
@@ -82,6 +77,12 @@
                   />
                 </el-select>
               </el-form-item>
+
+              <el-form-item>
+                <el-button type="primary" icon="el-icon-refresh" size="small" @click="refreshCourseAndBatch()">刷新
+                </el-button>
+              </el-form-item>
+
             </el-col>
           </el-row>
         </el-form>
@@ -261,7 +262,7 @@
 <script>
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
-import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
+import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
 
 export default {
   name: 'Batch',
@@ -335,22 +336,28 @@ export default {
       this.searchBatch.selectedCourseId = courseId
       this.fetchBatchData(1)
     },
-    // 获取所有课程列表
+    // 获取所有课程列表，只获取启用的课程
     getCourseList() {
-      courseApi.getCourseList().then(response => {
+      courseApi.getCourseListOnlyEnabled().then(response => {
         this.courseList = response.data
       })
     },
-    handleSelectionChange() {
-
-    },
+    handleSelectionChange() {},
     // 拉取批次数据，分页查询
     fetchBatchData(page) {
       if (page) {
         this.pageInfo.page = page
       }
       batchApi.getBatchListPage(this.searchBatch, this.pageInfo.page, this.pageInfo.pageSize).then(response => {
-        const {data} = response
+        if (response.code === 800) {
+          this.$message.error(response.msg)
+          // 清空课程选择框
+          this.searchBatch.belongCourseId = ''
+          // 清空批次列表
+          this.batchList = []
+          return
+        }
+        const { data } = response
         this.pageInfo.total = data.total
         this.pageInfo.page = data.current
         this.batchList = data.records
@@ -370,7 +377,7 @@ export default {
     // 点击修改按钮，弹出修改对话框，回显数据
     handleEdit(batchId) {
       batchApi.getBatchById(batchId).then(response => {
-        const { data } = response
+        const {data} = response
         // this.batch = data
         this.batch.id = data.id
         this.batch.batchName = data.batchName
@@ -443,6 +450,12 @@ export default {
       }).catch(error => {
         console.log(error)
       })
+    },
+    refreshCourseAndBatch() {
+      this.getCourseList()
+      if (this.searchBatch.belongCourseId !== '') {
+        this.fetchBatchData(1)
+      }
     },
     // 重置batch对象，清空所有属性中的值
     resetBatch() {

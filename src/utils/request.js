@@ -51,7 +51,8 @@ service.interceptors.response.use(
         duration: 5 * 1000
       })
       return Promise.reject(new Error('用户权限不足'))
-    } else if (res.code === 401) { // 用户或密码错误，登陆失败
+    }
+    if (res.code === 401) { // 用户或密码错误，登陆失败
       Message({
         // message: res.msg || 'Error',
         message: '用户或密码错误，登陆失败',
@@ -59,10 +60,38 @@ service.interceptors.response.use(
         duration: 5 * 1000
       })
       return Promise.reject(new Error('用户或密码错误，登陆失败'))
-    } else if (res.code === 806 || res.code === 809) { // 登陆已过期
-      console.log('806 || 809')
-      MessageBox.alert('登陆已过期，请重新登陆', '重新登陆', {
+    }
+    if (res.code === 806 || res.code === 809) { // 登陆已过期
+      MessageBox.confirm('登陆已过期，请重新登陆', '重新登陆', {
         confirmButtonText: '重新登陆',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/resetToken').then(() => {
+          location.reload()
+        })
+      })
+      return Promise.reject(new Error('登陆已过期，请重新登陆'))
+    }
+    if (res.code === 807) { // Token未知错误
+      MessageBox.confirm('Token未知错误，请重新登陆', '重新登陆', {
+        confirmButtonText: '重新登陆',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        store.dispatch('user/resetToken').then(() => {
+          location.reload()
+        })
+      })
+      return Promise.reject(new Error('Token未知错误，请重新登陆'))
+    }
+
+    // 下载文件时判断登陆是否过期，后端在响应头里放上is_expired的值，如果没有这个值，说明没有过期
+    if (response.headers['is_expired'] === 'expired') {
+      // 提示用户之后再进行页面的刷新
+      MessageBox.confirm('登陆已过期，请重新登陆', '重新登陆', {
+        confirmButtonText: '重新登陆',
+        cancelButtonText: '取消',
         type: 'error'
       }).then(() => {
         store.dispatch('user/resetToken').then(() => {
@@ -70,33 +99,56 @@ service.interceptors.response.use(
         })
       })
       return Promise.reject(new Error('登陆已过期，请重新登陆'))
-    } else if (res.code === 807) { // Token未知错误
-      MessageBox.alert('Token未知错误，请重新登陆', '重新登陆', {
-        confirmButtonText: '重新登陆',
-        type: 'error'
-      }).then(() => {
-        store.dispatch('user/resetToken').then(() => {
-          location.reload()
-        })
-      })
-      return Promise.reject(new Error('Token未知错误，请重新登陆'))
-    } else {
-      return res
     }
-    // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
-    // if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
-    //   // to re-login
-    //   MessageBox.confirm('You have been logged out, you can cancel to stay on this page, or log in again', 'Confirm logout', {
-    //     confirmButtonText: 'Re-Login',
-    //     cancelButtonText: 'Cancel',
-    //     type: 'warning'
-    //   }).then(() => {
-    //     store.dispatch('user/resetToken').then(() => {
-    //       location.reload()
-    //     })
-    //   })
-    // }
-    // return Promise.reject(new Error(res.msg || 'Error'))
+
+    // 检查下载文件时是否有后端传来的异常信息
+    if (response.headers['exception']) {
+      let msg = response.headers['exception']
+      if (msg === 'batch not exist') {
+        msg = '批次不存在'
+      } else if (msg === 'batch not end') {
+        msg = '该批次还未截止，无法下载'
+      } else if (msg === 'course is disabled') {
+        msg = '所属课程已被禁用，无法下载'
+      } else if (msg === 'no task') {
+        msg = '该批次下还没有作业'
+      } else if (msg === 'batch folder not exist') {
+        msg = '该批次文件夹不存在'
+      } else {
+        msg = ''
+      }
+
+      if (msg !== '') {
+        Message({
+          message: msg,
+          type: 'error',
+          duration: 5 * 1000
+        })
+        return res
+      }
+    }
+
+    // 判断是否有文件下载
+    const respContentType = response.headers['content-type']
+    if (respContentType === 'application/octet-stream;charset=UTF-8') {
+      // 由于后台返回文件名称是通过response返回的
+      // 因此需要从response headers中content-disposition响应头中获取文件名称fileName
+      let fileName = response.headers['content-disposition']
+      fileName = fileName.split('=')[1]
+      const url = window.URL.createObjectURL(new Blob([res], {
+        type: 'application/octet-stream;charset=UTF-8'
+      }))
+      const link = document.createElement('a')
+      link.style.display = 'none'
+      link.href = url
+      // decodeURIComponent解决文件名的url转码问题
+      link.setAttribute('download', decodeURIComponent(fileName))
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+    return res
+
   },
   error => {
     console.log('err' + error) // for debug

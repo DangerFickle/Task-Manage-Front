@@ -11,13 +11,6 @@ export default {
       params: searchBatch
     })
   },
-  // 根据所属课程获取批次列表
-  getBatchListByCourseId(courseId) {
-    return request({
-      url: `${apiHost}/batch/listByCourseId/${courseId}`,
-      method: 'get'
-    })
-  },
   // 获取批次列表，后端判断是否已提交
   getBatchListIsCommit(searchBatch, page, pageSize) {
     return request({

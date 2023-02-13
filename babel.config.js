@@ -1,5 +1,6 @@
 module.exports = {
   presets: [
+    // ['es2015', { 'modules': false }],
     // https://github.com/vuejs/vue-cli/tree/master/packages/@vue/babel-preset-app
     '@vue/cli-plugin-babel/preset'
   ],
@@ -10,5 +11,15 @@ module.exports = {
       // https://panjiachen.github.io/vue-element-admin-site/guide/advanced/lazy-loading.html
       'plugins': ['dynamic-import-node']
     }
-  }
+  },
+  plugins: [
+    [
+      'component',
+      {
+        'libraryName': 'element-ui',
+        'styleLibraryName': 'theme-chalk'
+      }
+    ],
+    ['import', { 'libraryName': 'ant-design-vue', 'libraryDirectory': 'es', 'style': 'css' }] // `style: true` 会加载 less 文件
+  ]
 }

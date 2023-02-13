@@ -2,6 +2,7 @@
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
 
+
 function resolve(dir) {
   return path.join(__dirname, dir)
 }
@@ -39,14 +40,16 @@ module.exports = {
     before: require('./mock/mock-server.js')
   },
   configureWebpack: {
-    // provide the app's title in webpack's name field, so that
-    // it can be accessed in index.html to inject the correct title.
+    // 在 webpack 的名称字段中提供应用程序的标题，以便可以在索引中访问它.html以注入正确的标题。
     name: name,
     resolve: {
       alias: {
         '@': resolve('src')
       }
-    }
+    },
+    plugins: [
+
+    ]
   },
   chainWebpack(config) {
     // it can improve the speed of the first screen, it is recommended to turn on preload

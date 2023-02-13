@@ -4,13 +4,9 @@
     <!-- 选择课程-->
     <el-row>
       <div class="tools-div" style="margin-bottom: 10px">
-        <el-form label-width="70px" size="medium" style="margin: 10px 0 -15px 0">
+        <el-form label-width="70px" inline size="medium" style="margin: 10px 0 -15px 0">
           <el-row>
             <el-col
-              :sm="10"
-              :md="10"
-              :lg="6"
-              :xl="5"
             >
               <el-form-item label="选择课程">
                 <el-select
@@ -28,6 +24,11 @@
                     :value="course.id"
                   />
                 </el-select>
+              </el-form-item>
+
+              <el-form-item>
+                <el-button type="primary" icon="el-icon-refresh" size="small" @click="refreshCourseAndBatch()">刷新
+                </el-button>
               </el-form-item>
             </el-col>
           </el-row>
@@ -68,16 +69,6 @@
           label="所属课程"
           align="center"
         />
-        <!--        <el-table-column label="状态" width="70">-->
-        <!--          <template slot-scope="scope">-->
-        <!--            <el-switch-->
-        <!--              v-model="scope.row.status === 1"-->
-        <!--              @change="switchStatus(scope.row)">-->
-        <!--            </el-switch>-->
-        <!--          </template>-->
-        <!--        </el-table-column>-->
-
-
 
         <el-table-column
           label="截至时间"
@@ -182,7 +173,7 @@
         :auto-upload="true"
         action=""
       >
-        <i class="el-icon-upload" />
+        <i class="el-icon-upload"/>
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
         <div slot="tip" class="el-upload__tip" style="font-size: 15px">上传的文件不得超过20MB！</div>
       </el-upload>
@@ -194,7 +185,7 @@
 import taskApi from '@/api/task'
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
-import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
+import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
 
 export default {
   name: 'CommitTask',
@@ -241,7 +232,8 @@ export default {
           this.fetchBatchData()
         })
       })
-        .catch(() => {})
+        .catch(() => {
+        })
     },
     getCourseListOnlyEnabled() {
       courseApi.getCourseListOnlyEnabled().then(response => {
@@ -256,6 +248,16 @@ export default {
         this.pageInfo.page = page
       }
       batchApi.getBatchListIsCommit(this.searchBatch, this.pageInfo.page, this.pageInfo.pageSize).then(response => {
+        if (response.code === 800) {
+          this.$message.error(response.msg)
+          // 重新加载课程数据
+          this.getCourseListOnlyEnabled()
+          // 重置课程选择框
+          this.searchBatch.belongCourseId = ''
+          // 重置批次列表
+          this.batchList = []
+          return
+        }
         const { data } = response
         this.pageInfo.total = data.total
         this.pageInfo.page = data.current
@@ -275,7 +277,7 @@ export default {
     //     return false
     //   }
     // },
-    handleCommit({ file }) {
+    handleCommit({file}) {
       const formData = new FormData()
       formData.append('taskFile', file)
       formData.append('belongBatchId', this.commitParameters.belongBatchId)
@@ -292,6 +294,13 @@ export default {
     },
     onCommitSuccess(response, file, fileList) {
       console.log('onCommitSuccess')
+    },
+    // 重新加载课程和批次数据
+    refreshCourseAndBatch() {
+      this.getCourseListOnlyEnabled()
+      if (this.searchBatch.belongCourseId !== '') {
+        this.fetchBatchData()
+      }
     }
   }
 
