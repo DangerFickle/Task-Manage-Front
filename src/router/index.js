@@ -118,14 +118,20 @@ export const exclusiveRoute = [
   },
 
   {
-    path: '/personnelManage',
+    path: '/userManage',
     component: Layout,
-    name: 'personnelManage',
-    meta: {
-      title: '人员管理',
-      icon: 'el-icon-s-custom',
-      role: ['system']
-    }
+    children: [
+      {
+        path: 'index',
+        name: 'UserManage',
+        component: () => import('@/views/userManage/index'),
+        meta: {
+          title: '人员管理',
+          icon: 'el-icon-s-custom',
+          role: ['system']
+        }
+      }
+    ]
   },
   {
     path: '/personal',
