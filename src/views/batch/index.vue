@@ -13,7 +13,7 @@
               :xl="5"
             >
               <el-form-item label="批次名称">
-                <el-input v-model="searchBatch.batchName" style="width: 100%" placeholder="请输入批次名称(选填)"/>
+                <el-input v-model="searchBatch.batchName" style="width: 100%" placeholder="请输入批次名称(选填)" />
               </el-form-item>
             </el-col>
             <el-col
@@ -22,7 +22,7 @@
               :xl="{span: 5, pull: 1}"
             >
               <el-form-item label="批次描述">
-                <el-input v-model="searchBatch.description" style="width: 100%" placeholder="请输入批次描述(选填)"/>
+                <el-input v-model="searchBatch.description" style="width: 100%" placeholder="请输入批次描述(选填)" />
               </el-form-item>
             </el-col>
 
@@ -32,7 +32,7 @@
               :xl="{span: 5, pull: 1}"
             >
               <el-form-item label="创建人">
-                <el-input v-model="searchBatch.creatorName" style="width: 100%" placeholder="请输入批次创建者(选填)"/>
+                <el-input v-model="searchBatch.creatorName" style="width: 100%" placeholder="请输入批次创建者(选填)" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -102,7 +102,8 @@
         <el-table-column
           label="序号"
           width="50"
-          align="center">
+          align="center"
+        >
           <template slot-scope="scope">
             {{ (pageInfo.page - 1) * pageInfo.pageSize + scope.$index + 1 }}
           </template>
@@ -112,7 +113,6 @@
           label="批次名称"
           align="center"
           :width="flexColumnWidth(batchList, '批次名称', 'batchName')"
-
         />
         <el-table-column
           prop="description"
@@ -125,7 +125,6 @@
           label="所属课程"
           align="center"
           :width="flexColumnWidth(batchList, '所属课程', 'belongCourseName')"
-
         />
         <el-table-column label="可用状态" width="80" align="center">
           <template slot-scope="scope">
@@ -133,8 +132,8 @@
               :value="scope.row.isEnd === 0"
               inactive-color="#ff4949"
               active-color="#13ce66"
-              @change="switchStatus(scope.row)">
-            </el-switch>
+              @change="switchStatus(scope.row)"
+            />
           </template>
         </el-table-column>
         <el-table-column
@@ -210,14 +209,14 @@
       />
     </el-row>
 
-    <el-dialog title="添加/修改" :visible.sync="addOrUpdateDialogVisible" width="450px" center>
-      <el-form ref="dataForm" :model="batch" label-width="100px" size="small" style="padding-right: 40px;">
+    <el-dialog title="添加/修改" @close="dialogClose()" :visible.sync="addOrUpdateDialogVisible" width="450px" center>
+      <el-form ref="batchForm" :rules="batchRules" :model="batch" label-width="100px" size="small" style="padding-right: 40px;">
         <el-form-item label="批次名称:" prop="batchName">
-          <el-input v-model.trim="batch.batchName"/>
+          <el-input v-model.trim="batch.batchName" />
         </el-form-item>
 
         <el-form-item label="批次描述:" prop="description">
-          <el-input v-model.trim="batch.description"/>
+          <el-input v-model.trim="batch.description" />
         </el-form-item>
 
         <el-form-item label="所属课程:" prop="belongCourseId">
@@ -252,8 +251,8 @@
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-        <el-button @click="addOrUpdateDialogVisible = false" size="small" icon="el-icon-refresh-right">取 消</el-button>
-        <el-button type="primary" icon="el-icon-check" @click="saveOrUpdate()" size="small">确 定</el-button>
+        <el-button size="small" icon="el-icon-refresh-right" @click="addOrUpdateDialogVisible = false">取 消</el-button>
+        <el-button type="primary" icon="el-icon-check" size="small" @click="saveOrUpdate()">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -262,13 +261,25 @@
 <script>
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
-import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
+import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
 
 export default {
   name: 'Batch',
   mixins: [flexColumnWidthFN],
   data() {
     return {
+      // 批次表单验证规则
+      batchRules: {
+        batchName: [
+          { required: true, message: '请输入批次名', trigger: 'blur' }
+        ],
+        description: [
+          { required: true, message: '请输入批次描述', trigger: 'blur' }
+        ],
+        belongCourseId: [
+          { required: true, message: '请选择所属课程', trigger: 'blur' }
+        ]
+      },
       pickerOptions: {
         shortcuts: [
           {
@@ -318,16 +329,18 @@ export default {
       }, // 批次信息
       batchList: [], // 批次信息列表
       courseList: [], // 课程列表
-      addOrUpdateDialogVisible: false, // 添加/修改对话框是否显示
+      addOrUpdateDialogVisible: false // 添加/修改对话框是否显示
     }
   },
   created() {
     // 获取课程列表，所属课程下拉框数据
     this.getCourseList()
-    // 获取批次列表
-    // this.fetchBatchData(1)
   },
   methods: {
+    // 添加/修改对话框关闭时触发，重置表单，重置检验效果
+    dialogClose() {
+      this.$refs.batchForm.resetFields()
+    },
     changeSelectForm() {
 
     },
@@ -342,7 +355,8 @@ export default {
         this.courseList = response.data
       })
     },
-    handleSelectionChange() {},
+    handleSelectionChange() {
+    },
     // 拉取批次数据，分页查询
     fetchBatchData(page) {
       if (page) {
@@ -353,6 +367,8 @@ export default {
           this.$message.error(response.msg)
           // 清空课程选择框
           this.searchBatch.belongCourseId = ''
+          // 重新获取课程列表
+          this.getCourseList()
           // 清空批次列表
           this.batchList = []
           return
@@ -368,8 +384,6 @@ export default {
       this.fetchBatchData(1)
     },
     handleAdd() {
-      // 重置batch
-      this.resetBatch()
       // 打开添加对话框时，重新拉取课程列表
       this.getCourseList()
       this.addOrUpdateDialogVisible = true
@@ -377,7 +391,7 @@ export default {
     // 点击修改按钮，弹出修改对话框，回显数据
     handleEdit(batchId) {
       batchApi.getBatchById(batchId).then(response => {
-        const {data} = response
+        const { data } = response
         // this.batch = data
         this.batch.id = data.id
         this.batch.batchName = data.batchName
@@ -389,15 +403,24 @@ export default {
       })
     },
     saveOrUpdate() {
-      if (this.batch.id) {
-        this.updateBatch()
-      } else {
-        this.addBatch()
-      }
+      this.$refs.batchForm.validate((valid) => {
+        if (valid) {
+          if (this.batch.id) {
+            this.updateBatch()
+          } else {
+            this.addBatch()
+          }
+        } else {
+          return false
+        }
+      })
     },
     addBatch() {
       batchApi.addBatch(this.batch).then(response => {
-        this.fetchBatchData(1)
+        // 添加批次成功后，如果所属课程下拉框有选中的课程，则重新拉取批次列表
+        if (this.searchBatch.belongCourseId !== '') {
+          this.fetchBatchData(1)
+        }
         this.addOrUpdateDialogVisible = false
         this.$message({
           type: response.code === 800 ? 'error' : 'success',
@@ -414,11 +437,7 @@ export default {
           type: response.code === 800 ? 'error' : 'success',
           message: response.msg
         })
-        // 重置batch对象，清空所有属性中的值
-        // 不可以直接将batch赋值为空对象，这会失去响应式，导致绑定属性的表单元素无法输入
-        // this.resetBatch()
-      }).catch(() => {
-      })
+      }).catch(() => {})
     },
     handleDelete(row) {
       this.$confirm(`确认删除 <${row.batchName}> 批次吗？此操作不可逆！`, '警告', {
@@ -477,9 +496,9 @@ export default {
 
 <style lang="scss">
 // 隐藏日期时间选择器的此刻按钮
-//.el-picker-panel.no-atTheMoment {
-//  .el-button--text.el-picker-panel__link-btn {
-//    display: none;
-//  }
-//}
+.el-picker-panel.no-atTheMoment {
+  .el-button--text.el-picker-panel__link-btn {
+    display: none;
+  }
+}
 </style>

@@ -22,7 +22,6 @@ const actions = {
   generateRoutes({ commit }, data) {
     const { roleName } = data
     const addRouters = exclusiveRoute.filter(router => {
-      if (roleName === 'system') return true
       if (hasPermission(roleName, router)) {
         if (router.children && router.children.length > 0) {
           router.children = router.children.filter(child => {

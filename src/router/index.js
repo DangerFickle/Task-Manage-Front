@@ -57,7 +57,7 @@ export const exclusiveRoute = [
         meta: {
           title: '提交作业',
           icon: 'el-icon-upload',
-          role: ['system', 'normal', 'user']
+          role: ['normal', 'user']
         }
       }
     ]

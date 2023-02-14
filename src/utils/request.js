@@ -48,24 +48,24 @@ service.interceptors.response.use(
         // message: res.msg || 'Error',
         message: '用户权限不足',
         type: 'error',
-        duration: 5 * 1000
+        duration: 3 * 1000
       })
       return Promise.reject(new Error('用户权限不足'))
     }
     if (res.code === 401) { // 用户或密码错误，登陆失败
       Message({
         // message: res.msg || 'Error',
-        message: '用户或密码错误，登陆失败',
+        message: '用户或密码错误',
         type: 'error',
-        duration: 5 * 1000
+        duration: 3 * 1000
       })
       return Promise.reject(new Error('用户或密码错误，登陆失败'))
     }
     if (res.code === 806 || res.code === 809) { // 登陆已过期
       MessageBox.confirm('登陆已过期，请重新登陆', '重新登陆', {
         confirmButtonText: '重新登陆',
-        cancelButtonText: '取消',
-        type: 'warning'
+        showCancelButton: false,
+        type: 'error',
       }).then(() => {
         store.dispatch('user/resetToken').then(() => {
           location.reload()
@@ -76,8 +76,8 @@ service.interceptors.response.use(
     if (res.code === 807) { // Token未知错误
       MessageBox.confirm('Token未知错误，请重新登陆', '重新登陆', {
         confirmButtonText: '重新登陆',
-        cancelButtonText: '取消',
-        type: 'warning'
+        showCancelButton: false,
+        type: 'error'
       }).then(() => {
         store.dispatch('user/resetToken').then(() => {
           location.reload()
@@ -91,7 +91,7 @@ service.interceptors.response.use(
       // 提示用户之后再进行页面的刷新
       MessageBox.confirm('登陆已过期，请重新登陆', '重新登陆', {
         confirmButtonText: '重新登陆',
-        cancelButtonText: '取消',
+        showCancelButton: false,
         type: 'error'
       }).then(() => {
         store.dispatch('user/resetToken').then(() => {

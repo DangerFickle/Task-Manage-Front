@@ -100,14 +100,12 @@
           label="课程名称"
           align="center"
           :width="flexColumnWidth(courseList, '课程名称', 'courseName')"
-
         />
         <el-table-column
           prop="description"
           label="课程描述"
           align="center"
           :width="flexColumnWidth(courseList, '课程描述', 'description')"
-
         />
         <el-table-column
           prop="creatorName"
@@ -181,8 +179,9 @@
       />
     </el-row>
 
-    <el-dialog title="添加/修改" :visible.sync="addOrUpdateDialogVisible" width="400px" center style="margin: 40px">
-      <el-form ref="dataForm" :model="course" label-width="100px" size="small" style="padding-right: 40px;">
+    <el-dialog title="添加/修改" @close="dialogClose()" :visible.sync="addOrUpdateDialogVisible" width="400px" center style="margin: 40px">
+      <el-form ref="courseForm" :rules="courseRules" :model="course" label-width="100px" size="small"
+               style="padding-right: 40px;">
         <el-form-item label="课程名称:" prop="courseName">
           <el-input v-model.trim="course.courseName"/>
         </el-form-item>
@@ -192,7 +191,8 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button size="small" icon="el-icon-refresh-right" @click="addOrUpdateDialogVisible = false">取 消</el-button>
-        <el-button type="primary" icon="el-icon-check" size="small" @click="saveOrUpdate()">确 定</el-button>
+        <el-button type="primary" icon="el-icon-check" size="small"
+                   @click="saveOrUpdate()">确 定</el-button>
       </span>
     </el-dialog>
 
@@ -202,13 +202,22 @@
 
 <script>
 import courseApi from '@/api/course'
-import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
+import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
 
 export default {
   name: 'Course',
   mixins: [flexColumnWidthFN],
   data() {
     return {
+      // 课程表单验证规则
+      courseRules: {
+        courseName: [
+          { required: true, message: '请输入课程名', trigger: 'blur' }
+        ],
+        description: [
+          { required: true, message: '请输入课程描述', trigger: 'blur' }
+        ]
+      },
       pageInfo: {
         pageSize: 5, // 每页显示条数
         page: 1, // 当前页码
@@ -235,6 +244,10 @@ export default {
     this.fetchCourseData()
   },
   methods: {
+    // 添加/修改对话框关闭时触发，重置表单，重置检验效果
+    dialogClose() {
+      this.$refs.courseForm.resetFields()
+    },
     fetchCourseData(page) {
       if (page) {
         this.pageInfo.page = page
@@ -264,7 +277,6 @@ export default {
       })
     },
     handleAdd() {
-      this.resetCourse()
       this.addOrUpdateDialogVisible = true
     },
     handleDelete(row) {
@@ -302,11 +314,17 @@ export default {
     },
     // 保存或更新课程信息
     saveOrUpdate() {
-      if (this.course.id) {
-        this.updateCourse()
-      } else {
-        this.addCourse()
-      }
+      this.$refs.courseForm.validate((valid) => {
+        if (valid) {
+          if (this.course.id) {
+            this.updateCourse()
+          } else {
+            this.addCourse()
+          }
+        } else {
+          return false
+        }
+      })
     },
     updateCourse() {
       courseApi.updateCourse(this.course).then(response => {
@@ -368,11 +386,6 @@ export default {
         })
       }).catch(error => {
       })
-    },
-    resetCourse() {
-      this.course.id = ''
-      this.course.courseName = ''
-      this.course.description = ''
     },
     resetSearchCourse() {
       this.searchCourse.courseName = ''

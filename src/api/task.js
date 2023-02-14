@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-const apiHost = 'http://192.168.31.110:8888'
+const apiHost = 'http://taskapi.belongme.top'
 
 export default {
   // 提交作业，上传文件

@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-const apiHost = 'http://192.168.31.110:8888'
+const apiHost = 'http://taskapi.belongme.top'
 
 export default {
   // 获取批次列表, 分页查询
@@ -15,6 +15,14 @@ export default {
   getBatchListIsCommit(searchBatch, page, pageSize) {
     return request({
       url: `${apiHost}/batch/listPageIsCommit/${page}/${pageSize}`,
+      method: 'get',
+      params: searchBatch
+    })
+  },
+  // 获取批次列表，后端判断是否已提交，返回提交人总数和用户总数
+  getBatchListIsCommitAndCount(searchBatch, page, pageSize) {
+    return request({
+      url: `${apiHost}/batch/listPageIsCommitAndCount/${page}/${pageSize}`,
       method: 'get',
       params: searchBatch
     })

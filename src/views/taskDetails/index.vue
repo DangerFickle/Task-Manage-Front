@@ -27,7 +27,8 @@
               </el-form-item>
 
               <el-form-item>
-                <el-button type="primary" icon="el-icon-refresh" size="small" @click="refreshCourseAndBatch()">刷新</el-button>
+                <el-button type="primary" icon="el-icon-refresh" size="small" @click="refreshCourseAndBatch()">刷新
+                </el-button>
               </el-form-item>
             </el-col>
           </el-row>
@@ -67,7 +68,17 @@
           align="center"
           :width="flexColumnWidth(batchList, '批次描述', 'description')"
         />
-
+        <!-- 提交人数 -->
+        <el-table-column
+          prop="personCount"
+          label="已交人数"
+          align="center"
+          :width="flexColumnWidth(batchList, '提交人数', 'personCount')"
+        >
+          <template v-slot="scope">
+            {{ scope.row.personCount }} / {{ scope.row.totalCount }}
+          </template>
+        </el-table-column>
         <!-- 所属课程 -->
         <el-table-column
           prop="belongCourseName"
@@ -113,25 +124,23 @@
               type="primary"
               size="small"
               icon="el-icon-download"
-              :disabled="false"
+              :disabled="scope.row.isEnd === 0"
               @click="handleDownloadFiles(scope.row.id)"
-            >一键下载
+            >下载全部
             </el-button>
 
             <el-button
               size="small"
               icon="el-icon-info"
               type="primary"
-              :disabled="false"
               @click="handleQueryTaskDetails(scope.row.id)"
-            >查看详情
+            >查看已交
             </el-button>
 
             <el-button
               size="small"
               icon="el-icon-view"
               type="primary"
-              :disabled="false"
               @click="handleQueryNoCommit(scope.row.id)"
             >查看未交
             </el-button>
@@ -157,7 +166,7 @@
     <el-dialog title="作业提交情况" :visible.sync="taskDetailsDialogVisible" width="70%" center>
       <el-row>
         <div class="search-div">
-          <el-form label-width="70px" size="medium" style="margin: 10px 0 -15px 0" inline>
+          <el-form label-width="70px" size="medium" style="margin-bottom: -20px" inline>
             <el-form-item label="学生姓名">
               <el-input
                 v-model.trim="searchTaskDetails.studentName"
@@ -171,16 +180,14 @@
           </el-form>
         </div>
       </el-row>
-
+      <!-- 作业详情表单 -->
       <el-row>
         <el-table
           :data="taskDetailsList"
           stripe
           border
           style="margin-top: 10px"
-          @selection-change="handleSelectionChange"
         >
-          <el-table-column type="selection"/>
           <!-- 序号 -->
           <el-table-column
             label="序号"
@@ -203,16 +210,16 @@
             label="学号"
             align="center"
           />
-          <!-- 所属课程 -->
-          <el-table-column
-            prop="belongCourseName"
-            label="所属课程"
-            align="center"
-          />
           <!-- 所属批次 -->
           <el-table-column
             prop="belongBatchName"
             label="所属批次"
+            align="center"
+          />
+          <!-- 所属课程 -->
+          <el-table-column
+            prop="belongCourseName"
+            label="所属课程"
             align="center"
           />
           <!-- 提交时间 -->
@@ -235,13 +242,12 @@
                 icon="el-icon-download"
                 :disabled="scope.row.isEnd === 0"
                 @click="handleDownloadFile(scope.row.taskId)"
-              >下载文件
+              >下载
               </el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-row>
-
       <!-- 作业详情表格分页插件 -->
       <el-row>
         <!-- 分页组件 -->
@@ -255,6 +261,88 @@
         />
       </el-row>
     </el-dialog>
+
+    <!-- 查看未交人员弹窗 -->
+    <el-dialog title="未交人员" :visible.sync="noCommitDialogVisible" width="50%" style="margin-top: -70px" center>
+      <el-row style="margin-bottom: 10px">
+        <div class="search-div">
+          <el-form label-width="70px" size="medium" style="margin-bottom: -22px" inline>
+            <el-form-item label="学生姓名">
+              <el-input
+                v-model.trim="searchNoCommitUser.studentName"
+                placeholder="请输入学生姓名(选填)"
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" icon="el-icon-search" size="small" @click="freshNoCommitUserList()">搜索
+              </el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-row>
+
+      <el-row>
+        <el-table
+          :data="userList"
+          stripe
+          border
+        >
+<!--          <el-table-column type="selection"/>-->
+          <!-- 序号 -->
+          <el-table-column
+            label="序号"
+            width="50"
+            align="center"
+          >
+            <template slot-scope="scope">
+              {{ (taskDetailsPageInfo.page - 1) * taskDetailsPageInfo.pageSize + scope.$index + 1 }}
+            </template>
+          </el-table-column>
+          <!-- 学生姓名 -->
+          <el-table-column
+            prop="name"
+            label="学生姓名"
+            align="center"
+          />
+          <!-- 学号 -->
+          <el-table-column
+            prop="studentNumber"
+            label="学号"
+            align="center"
+          />
+          <!-- 操作 -->
+          <el-table-column
+            label="操作"
+            align="center"
+            width="120"
+          >
+            <template v-slot="scope">
+              <el-button
+                type="primary"
+                size="small"
+                icon="el-icon-mail"
+                :disabled="scope.row.isEnd === 0"
+                @click="handleRemind(scope.row.id)"
+              >提醒TA
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-row>
+
+      <el-row>
+        <!-- 分页组件 -->
+        <el-pagination
+          :current-page="noCommitPageInfo.page"
+          :total="noCommitPageInfo.total"
+          :page-size="noCommitPageInfo.pageSize"
+          style="padding: 30px 0; text-align: center;"
+          layout="total, prev, pager, next, jumper"
+          @current-change="freshNoCommitUserList"
+        />
+      </el-row>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -264,6 +352,7 @@ import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
 import taskApi from '@/api/task'
+import userApi from '@/api/user'
 import taskDetailsApi from '@/api/taskDetails'
 
 export default {
@@ -281,6 +370,11 @@ export default {
         page: 1, // 当前页码
         total: 0 // 总记录数
       }, // 作业详情的分页信息
+      noCommitPageInfo: {
+        pageSize: 10, // 每页显示条数
+        page: 1, // 当前页码
+        total: 0 // 总记录数
+      }, // 未交人员的分页信息
       searchBatch: {
         belongCourseId: ''
       },
@@ -288,10 +382,16 @@ export default {
         studentName: '',
         belongBatchId: ''
       },
+      searchNoCommitUser: {
+        studentName: '',
+        belongBatchId: ''
+      },
       taskDetailsDialogVisible: false, // 作业详情对话框是否可见
+      noCommitDialogVisible: false, // 未见人员对话框是否可见
       taskDetailsList: [],
-      courseList: [],
-      batchList: []
+      courseList: [], // 课程列表，用于下拉框
+      batchList: [], // 批次列表
+      userList: [], // 未交人员列表
     }
   },
   created() {
@@ -299,6 +399,28 @@ export default {
     this.getCourseList()
   },
   methods: {
+    // 根据批次id查询未交人员
+    handleQueryNoCommit(batchId) {
+      this.searchNoCommitUser.belongBatchId = batchId
+      this.freshNoCommitUserList(1)
+    },
+    // 根据批次id查询未交人员
+    freshNoCommitUserList(noCommitPage) {
+      if (noCommitPage) {
+        this.noCommitPageInfo.page = noCommitPage
+      }
+      // 发送请求获取未交人员列表
+      userApi.getNoCommitUserList(this.searchNoCommitUser, this.noCommitPageInfo.page, this.noCommitPageInfo.pageSize).then(response => {
+        if (response.code === 800) {
+          this.$message.error(response.msg)
+          return
+        }
+        this.noCommitPageInfo.total = response.data.total
+        this.noCommitPageInfo.page = response.data.current
+        this.userList = response.data.records
+        this.noCommitDialogVisible = true // 打开未交人员对话框
+      })
+    },
     // 根据批次id批量下载
     handleDownloadFiles(batchId) {
       taskApi.downloadTaskFiles(batchId).then(response => {
@@ -321,7 +443,6 @@ export default {
           this.fetchTaskDetailsByBatchId()
           return
         }
-
       })
     },
     // 获取课程列表，只获取已启用的课程
@@ -335,7 +456,7 @@ export default {
       if (batchPage) {
         this.batchPageInfo.page = batchPage
       }
-      batchApi.getBatchListIsCommit(this.searchBatch, this.batchPageInfo.page, this.batchPageInfo.pageSize).then(response => {
+      batchApi.getBatchListIsCommitAndCount(this.searchBatch, this.batchPageInfo.page, this.batchPageInfo.pageSize).then(response => {
         if (response.code === 800) {
           this.$message.error(response.msg)
           // 刷新课程列表数据
@@ -346,7 +467,7 @@ export default {
           this.batchList = []
           return
         }
-        const { data } = response
+        const {data} = response
         this.batchPageInfo.total = data.total
         this.batchPageInfo.page = data.current
         this.batchList = data.records
@@ -365,8 +486,7 @@ export default {
           this.fetchBatchByCourseId()
           return
         }
-        const { data } = response
-        console.log(data)
+        const {data} = response
         this.taskDetailsPageInfo.total = data.total
         this.taskDetailsPageInfo.page = data.current
         this.taskDetailsList = data.records

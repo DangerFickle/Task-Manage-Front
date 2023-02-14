@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-const apiHost = 'http://192.168.31.110:8888'
+const apiHost = 'http://taskapi.belongme.top'
 
 export default {
   getCourseListPage(searchCourse, page, pageSize) {
@@ -8,12 +8,6 @@ export default {
       url: `${apiHost}/course/listPage/${page}/${pageSize}`,
       method: 'get',
       params: searchCourse
-    })
-  },
-  getCourseList() {
-    return request({
-      url: `${apiHost}/course/list`,
-      method: 'get'
     })
   },
   getCourseListOnlyEnabled() {

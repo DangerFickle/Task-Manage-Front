@@ -27,8 +27,7 @@
               </el-form-item>
 
               <el-form-item>
-                <el-button type="primary" icon="el-icon-refresh" size="small" @click="refreshCourseAndBatch()">刷新
-                </el-button>
+                <el-button type="primary" icon="el-icon-refresh" size="small" @click="refreshCourseAndBatch()">刷新</el-button>
               </el-form-item>
             </el-col>
           </el-row>
