@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
-const apiHost = 'http://taskapi.belongme.top'
-
+// 加载配置文件中的apiHost
+const apiHost = process.env.VUE_APP_TASK_API
 export default {
   // 获取批次列表, 分页查询
   getBatchListPage(searchBatch, page, pageSize) {

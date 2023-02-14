@@ -54,7 +54,6 @@ service.interceptors.response.use(
     }
     if (res.code === 401) { // 用户或密码错误，登陆失败
       Message({
-        // message: res.msg || 'Error',
         message: '用户或密码错误',
         type: 'error',
         duration: 3 * 1000

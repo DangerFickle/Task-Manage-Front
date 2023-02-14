@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-const apiHost = 'http://taskapi.belongme.top'
+const apiHost = process.env.VUE_APP_TASK_API
 
 export default {
   getCourseListPage(searchCourse, page, pageSize) {

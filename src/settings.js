@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'Job Manage',
+  title: '嗨嗐嗨作业管理系统',
 
   /**
    * @type {boolean} true | false
