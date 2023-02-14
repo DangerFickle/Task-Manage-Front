@@ -147,7 +147,6 @@ service.interceptors.response.use(
       document.body.removeChild(link)
     }
     return res
-
   },
   error => {
     console.log('err' + error) // for debug

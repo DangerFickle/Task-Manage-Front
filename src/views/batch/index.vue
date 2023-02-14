@@ -359,6 +359,10 @@ export default {
     },
     // 拉取批次数据，分页查询
     fetchBatchData(page) {
+      if (this.searchBatch.belongCourseId === '') {
+        this.$message.warning('请先选择所属课程')
+        return
+      }
       if (page) {
         this.pageInfo.page = page
       }
