@@ -36,8 +36,8 @@ module.exports = {
     overlay: {
       warnings: false,
       errors: true
-    },
-    before: require('./mock/mock-server.js')
+    }
+    // before: require('./mock/mock-server.js')
   },
   configureWebpack: {
     // 在 webpack 的名称字段中提供应用程序的标题，以便可以在索引中访问它.html以注入正确的标题。
@@ -52,6 +52,7 @@ module.exports = {
     ]
   },
   chainWebpack(config) {
+    config.plugins.delete('preload')
     // it can improve the speed of the first screen, it is recommended to turn on preload
     // config.plugins.delete('preload')
 

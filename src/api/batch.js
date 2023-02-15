@@ -1,12 +1,11 @@
 import request from '@/utils/request'
 
-// 加载配置文件中的apiHost
-const apiHost = process.env.VUE_APP_TASK_API
+
 export default {
   // 获取批次列表, 分页查询
   getBatchListPage(searchBatch, page, pageSize) {
     return request({
-      url: `${apiHost}/batch/listPage/${page}/${pageSize}`,
+      url: `/batch/listPage/${page}/${pageSize}`,
       method: 'get',
       params: searchBatch
     })
@@ -14,7 +13,7 @@ export default {
   // 获取批次列表，后端判断是否已提交
   getBatchListIsCommit(searchBatch, page, pageSize) {
     return request({
-      url: `${apiHost}/batch/listPageIsCommit/${page}/${pageSize}`,
+      url: `/batch/listPageIsCommit/${page}/${pageSize}`,
       method: 'get',
       params: searchBatch
     })
@@ -22,40 +21,40 @@ export default {
   // 获取批次列表，后端判断是否已提交，返回提交人总数和用户总数
   getBatchListIsCommitAndCount(searchBatch, page, pageSize) {
     return request({
-      url: `${apiHost}/batch/listPageIsCommitAndCount/${page}/${pageSize}`,
+      url: `/batch/listPageIsCommitAndCount/${page}/${pageSize}`,
       method: 'get',
       params: searchBatch
     })
   },
   addBatch(batch) {
     return request({
-      url: `${apiHost}/batch/add`,
+      url: `}/batch/add`,
       method: 'post',
       data: batch
     })
   },
   getBatchById(batchId) {
     return request({
-      url: `${apiHost}/batch/get/${batchId}`,
+      url: `/batch/get/${batchId}`,
       method: 'get'
     })
   },
   updateBatch(batch) {
     return request({
-      url: `${apiHost}/batch/update`,
+      url: `/batch/update`,
       method: 'put',
       data: batch
     })
   },
   deleteByBatchId(batchId) {
     return request({
-      url: `${apiHost}/batch/delete/${batchId}`,
+      url: `/batch/delete/${batchId}`,
       method: 'delete'
     })
   },
   updateStatus(batchId, status) {
     return request({
-      url: `${apiHost}/batch/updateStatus/${batchId}/${status}`,
+      url: `/batch/updateStatus/${batchId}/${status}`,
       method: 'put'
     })
   }

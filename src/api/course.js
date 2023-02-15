@@ -1,57 +1,57 @@
 import request from '@/utils/request'
 
-const apiHost = process.env.VUE_APP_TASK_API
+
 
 export default {
   getCourseListPage(searchCourse, page, pageSize) {
     return request({
-      url: `${apiHost}/course/listPage/${page}/${pageSize}`,
+      url: `/course/listPage/${page}/${pageSize}`,
       method: 'get',
       params: searchCourse
     })
   },
   getCourseListOnlyEnabled() {
     return request({
-      url: `${apiHost}/course/listOnlyEnabled`,
+      url: `/course/listOnlyEnabled`,
       method: 'get'
     })
   },
   updateStatus(id, status) {
     return request({
       // 接口路径
-      url: `${apiHost}/course/updateStatus/${id}/${status}`,
+      url: `/course/updateStatus/${id}/${status}`,
       method: 'put' // 提交方式
     })
   },
   addCourse(course) {
     return request({
-      url: `${apiHost}/course/add`,
+      url: `/course/add`,
       method: 'post',
       data: course
     })
   },
   getCourseById(id) {
     return request({
-      url: `${apiHost}/course/get/${id}`,
+      url: `/course/get/${id}`,
       method: 'get'
     })
   },
   updateCourse(course) {
     return request({
-      url: `${apiHost}/course/update`,
+      url: `/course/update`,
       method: 'put',
       data: course
     })
   },
   deleteCourseById(courseId) {
     return request({
-      url: `${apiHost}/course/delete/${courseId}`,
+      url: `/course/delete/${courseId}`,
       method: 'delete'
     })
   },
   deleteBatchByIds(courseIds) {
     return request({
-      url: `${apiHost}/course/deleteBatch`,
+      url: `/course/deleteBatch`,
       method: 'delete',
       data: courseIds
     })
