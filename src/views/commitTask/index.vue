@@ -186,7 +186,7 @@
       width="300px"
       center
     >
-      <!-- 下载环形进度条 -->
+      <!-- 上传进度条 -->
       <el-progress :text-inside="true" :stroke-width="24" :percentage="percentage" status="success" style="margin-top: -15px; margin-bottom: -20px"/>
     </el-dialog>
   </div>
