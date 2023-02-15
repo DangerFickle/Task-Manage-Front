@@ -1,6 +1,5 @@
 import request from '@/utils/request'
 
-
 export default {
   // 获取批次列表, 分页查询
   getBatchListPage(searchBatch, page, pageSize) {
@@ -28,7 +27,7 @@ export default {
   },
   addBatch(batch) {
     return request({
-      url: `}/batch/add`,
+      url: `/batch/add`,
       method: 'post',
       data: batch
     })

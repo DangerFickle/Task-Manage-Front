@@ -22,7 +22,7 @@ export default {
   },
   getNoCommitUserList(searchNoCommitUser, page, pageSize) {
     return request({
-      url: `}/user/noCommitUserList/${page}/${pageSize}`,
+      url: `/user/noCommitUserList/${page}/${pageSize}`,
       method: 'get',
       params: searchNoCommitUser
     })

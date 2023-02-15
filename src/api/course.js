@@ -1,7 +1,5 @@
 import request from '@/utils/request'
 
-
-
 export default {
   getCourseListPage(searchCourse, page, pageSize) {
     return request({
