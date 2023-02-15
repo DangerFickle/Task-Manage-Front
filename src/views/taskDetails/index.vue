@@ -287,7 +287,7 @@
           stripe
           border
         >
-<!--          <el-table-column type="selection"/>-->
+          <!--          <el-table-column type="selection"/>-->
           <!-- 序号 -->
           <el-table-column
             label="序号"
@@ -343,12 +343,24 @@
       </el-row>
     </el-dialog>
 
+    <el-dialog
+      title="正在下载，请稍后..."
+      :show-close="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :visible.sync="percentageDialogVisible"
+      width="220px"
+      center
+    >
+      <!-- 下载环形进度条 -->
+      <el-progress type="circle" :percentage="percentage" style="margin: -20px 0 0 20px" />
+    </el-dialog>
   </div>
 </template>
 
 <script>
 // 处理表格的列对内容自适应
-import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
+import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
 import taskApi from '@/api/task'
@@ -360,6 +372,8 @@ export default {
   mixins: [flexColumnWidthFN],
   data() {
     return {
+      percentage: 0, // 下载环形进度条的百分比
+      percentageDialogVisible: false, // 下载环形进度条的弹窗是否显示
       batchPageInfo: {
         pageSize: 5, // 每页显示条数
         page: 1, // 当前页码
@@ -391,7 +405,7 @@ export default {
       taskDetailsList: [],
       courseList: [], // 课程列表，用于下拉框
       batchList: [], // 批次列表
-      userList: [], // 未交人员列表
+      userList: [] // 未交人员列表
     }
   },
   created() {
@@ -421,29 +435,95 @@ export default {
         this.noCommitDialogVisible = true // 打开未交人员对话框
       })
     },
+    // 下载单个文件
+    handleDownloadFile(taskId) {
+      this.percentageDialogVisible = true //  打开下载环形进度条的弹窗
+      taskApi.downloadTaskFile(taskId, this).then(response => {
+        // 检查下载文件时是否有后端传来的异常信息
+        if (response.headers['exception']) {
+          let msg = response.headers['exception']
+          if (msg === 'task not exist') {
+            msg = '该作业不存在，无法下载'
+            // 重新获取作业列表
+            this.fetchTaskDetailsByBatchId(1)
+          } else if (msg === 'task batch not end') {
+            msg = '所属批次还未截止，无法下载' // 严格来讲不需要这个判断，因为前端在批次未截止时已经禁用了下载按钮
+          } else if (msg === 'task file not exist') {
+            msg = '该作业文件不存在，文件系统中被人为删除了'
+          }
+          this.$message.error(msg)
+          // 重置环形进度条百分比为0
+          this.percentage = 0
+          return
+        }
+        // 下载文件
+        this.handleDownload(response)
+      })
+    },
     // 根据批次id批量下载
     handleDownloadFiles(batchId) {
-      taskApi.downloadTaskFiles(batchId).then(response => {
-        if (response.code === 800) {
-          this.$message.error(response.msg)
-          // 刷新课程详情数据列表
-          this.refreshCourseAndBatch()
+      this.percentageDialogVisible = true //  打开下载环形进度条的弹窗
+      taskApi.downloadBatchFiles(batchId, this).then(response => {
+        // 检查下载文件时是否有后端传来的异常信息
+        if (response.headers['exception']) {
+          let msg = response.headers['exception']
+          if (msg === 'batch not exist') {
+            msg = '该批次不存在，无法下载'
+            // 刷新批次列表
+            this.fetchBatchByCourseId()
+          } else if (msg === 'batch not end') {
+            msg = '该批次还未截止，无法下载'
+            // 刷新批次列表
+            this.fetchBatchByCourseId()
+          } else if (msg === 'course is disabled') {
+            msg = '所属课程已被禁用，无法下载'
+            // 重置课程下拉选择框
+            this.searchBatch.belongCourseId = ''
+            // 刷新课程列表
+            this.getCourseList()
+            // 重置批次列表
+            this.batchList = []
+          } else if (msg === 'no task') {
+            msg = '该批次下还没有作业'
+            // 刷新批次列表
+            this.fetchBatchByCourseId()
+          } else if (msg === 'batch folder not exist') {
+            msg = '该批次文件夹不存在'
+          } else {
+            msg = ''
+          }
+          if (msg !== '') {
+            this.$message.error(msg)
+            // 重置环形进度条百分比为0
+            this.percentage = 0
+            return
+          }
         }
+        // 处理下载逻辑
+        this.handleDownload(response)
       })
+    },
+    // 处理下载逻辑，传入response对象
+    handleDownload(response) {
+      // 由于后台返回文件名称是通过response返回的
+      // 因此需要从response headers中content-disposition响应头中获取文件名称fileName
+      let fileName = response.headers['content-disposition']
+      fileName = fileName.split('=')[1]
+      const url = window.URL.createObjectURL(new Blob([response.data], {
+        type: 'application/octet-stream;charset=UTF-8'
+      }))
+      const link = document.createElement('a')
+      link.style.display = 'none'
+      link.href = url
+      // decodeURIComponent解决文件名的url转码问题
+      link.setAttribute('download', decodeURIComponent(fileName))
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      this.percentage = 0 // 重置环形进度条百分比为0
     },
     handleSelectionChange() {
 
-    },
-    // 下载单个文件
-    handleDownloadFile(taskId) {
-      taskApi.downloadTaskFile(taskId).then(response => {
-        if (response.code === 800) {
-          this.$message.error(response.msg)
-          // 刷新课程详情数据列表
-          this.fetchTaskDetailsByBatchId()
-          return
-        }
-      })
     },
     // 获取课程列表，只获取已启用的课程
     getCourseList() {
@@ -467,7 +547,7 @@ export default {
           this.batchList = []
           return
         }
-        const {data} = response
+        const { data } = response
         this.batchPageInfo.total = data.total
         this.batchPageInfo.page = data.current
         this.batchList = data.records
@@ -486,7 +566,7 @@ export default {
           this.fetchBatchByCourseId()
           return
         }
-        const {data} = response
+        const { data } = response
         this.taskDetailsPageInfo.total = data.total
         this.taskDetailsPageInfo.page = data.current
         this.taskDetailsList = data.records

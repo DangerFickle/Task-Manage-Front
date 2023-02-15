@@ -6,8 +6,7 @@
       <div class="tools-div" style="margin-bottom: 10px">
         <el-form label-width="70px" inline size="medium" style="margin: 10px 0 -15px 0">
           <el-row>
-            <el-col
-            >
+            <el-col>
               <el-form-item label="选择课程">
                 <el-select
                   v-model="searchBatch.belongCourseId"
@@ -119,8 +118,8 @@
           <!-- isEnd为1时禁用，为0时可用 -->
           <template v-slot="scope">
             <el-button
-              type="primary"
               v-if="scope.row.isCommit === 0"
+              type="primary"
               size="small"
               icon="el-icon-upload2"
               :disabled="scope.row.isEnd === 1 || scope.row.isCommit === 1"
@@ -172,10 +171,23 @@
         :auto-upload="true"
         action=""
       >
-        <i class="el-icon-upload"/>
+        <i class="el-icon-upload" />
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
         <div slot="tip" class="el-upload__tip" style="font-size: 15px">上传的文件不得超过20MB！</div>
       </el-upload>
+    </el-dialog>
+
+    <el-dialog
+      title="正在上传，请稍后..."
+      :show-close="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :visible.sync="percentageDialogVisible"
+      width="300px"
+      center
+    >
+      <!-- 下载环形进度条 -->
+      <el-progress :text-inside="true" :stroke-width="24" :percentage="percentage" status="success" style="margin-top: -15px; margin-bottom: -20px"/>
     </el-dialog>
   </div>
 </template>
@@ -184,13 +196,14 @@
 import taskApi from '@/api/task'
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
-import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
+import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
 
 export default {
   name: 'CommitTask',
   mixins: [flexColumnWidthFN],
   data() {
     return {
+      percentage: 0, // 上传进度值
       pageInfo: {
         pageSize: 5, // 每页显示条数
         page: 1, // 当前页码
@@ -206,6 +219,7 @@ export default {
       courseList: [],
       batchList: [],
       updateDialogVisible: false, // 上传作业弹窗
+      percentageDialogVisible: false, // 上传进度弹窗
       commitParameters: {
         belongBatchId: ''
       } // 提交作业时的附带参数
@@ -215,6 +229,7 @@ export default {
     this.getCourseListOnlyEnabled()
   },
   methods: {
+    // 取消提交作业
     handleCancelCommit(batchId) {
       this.$confirm(`确认要取消提交吗？此操作不可逆！`, '警告', {
         type: 'warning',
@@ -234,6 +249,7 @@ export default {
         .catch(() => {
         })
     },
+    // 获取课程列表，只获取已启用的课程
     getCourseListOnlyEnabled() {
       courseApi.getCourseListOnlyEnabled().then(response => {
         this.courseList = response.data
@@ -267,26 +283,30 @@ export default {
       this.updateDialogVisible = true
       this.commitParameters.belongBatchId = batchId
     },
-    // beforeCommit(commitFile) {
-    //   const doNetLocation = commitFile.name.lastIndexOf('.') // ‘.’最后一次出现的位置
-    //   const fileName = commitFile.name.substring(0, doNetLocation) // ’.‘之前的所有字符，即为文件名
-    //   const fileNameReg = /^\d{4}D\d{7}\s[\u4e00-\u9fa5]{2,5}/g // 【学号 姓名】的正则表达式
-    //   if (!fileNameReg.test(fileName)) {
-    //     console.log('文件名不符合条件')
-    //     return false
-    //   }
-    // },
-    handleCommit({file}) {
+    handleCommit({ file }) {
+      this.updateDialogVisible = false // 关闭上传作业弹窗，用户选择文件后，已经开始上传阶段，就可以关闭弹窗了
+      this.percentageDialogVisible = true // 打开上传进度弹窗，在上传过程中，用户可以看到上传的进度
       const formData = new FormData()
       formData.append('taskFile', file)
       formData.append('belongBatchId', this.commitParameters.belongBatchId)
-      taskApi.commitTask(formData, this.commitParameters).then(response => {
+      taskApi.commitTask(formData, this).then(response => {
         this.fetchBatchData()
-        this.updateDialogVisible = false
-        this.$message({
-          type: response.code === 800 ? 'error' : 'success',
-          message: response.msg
-        })
+        // 判断是否有后端传回的错误信息
+        if (response.code === 800) {
+          // 如果上传文件时有错误，就关闭上传进度弹窗
+          this.percentageDialogVisible = false
+          this.$message({
+            type: 'error',
+            message: response.msg
+          })
+        } else {
+          this.$message({
+            type: 'success',
+            message: response.msg
+          })
+          // 重置上传进度值
+          this.percentage = 0
+        }
       }).catch(error => {
         console.log(error)
       })
