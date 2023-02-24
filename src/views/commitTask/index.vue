@@ -166,14 +166,13 @@
         center
         :show-file-list="false"
         :data="commitParameters"
-        :on-success="onCommitSuccess"
         :http-request="handleCommit"
         :auto-upload="true"
         action=""
       >
         <i class="el-icon-upload" />
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <div slot="tip" class="el-upload__tip" style="font-size: 15px">上传的文件不得超过20MB！</div>
+        <div slot="tip" class="el-upload__tip" style="font-size: 15px">上传的文件不得超过30MB！</div>
       </el-upload>
     </el-dialog>
 
@@ -284,6 +283,14 @@ export default {
       this.commitParameters.belongBatchId = batchId
     },
     handleCommit({ file }) {
+      // 判断文件大小
+      if (file.size > 30 * 1024 * 1024) {
+        this.$message({
+          type: 'error',
+          message: '作业文件不得超过30MB，请重新选择'
+        })
+        return
+      }
       this.updateDialogVisible = false // 关闭上传作业弹窗，用户选择文件后，已经开始上传阶段，就可以关闭弹窗了
       this.percentageDialogVisible = true // 打开上传进度弹窗，在上传过程中，用户可以看到上传的进度
       const formData = new FormData()

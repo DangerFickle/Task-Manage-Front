@@ -68,17 +68,6 @@
           align="center"
           :width="flexColumnWidth(batchList, '批次描述', 'description')"
         />
-        <!-- 提交人数 -->
-        <el-table-column
-          prop="personCount"
-          label="已交人数"
-          align="center"
-          :width="flexColumnWidth(batchList, '提交人数', 'personCount')"
-        >
-          <template v-slot="scope">
-            {{ scope.row.personCount }} / {{ scope.row.totalCount }}
-          </template>
-        </el-table-column>
         <!-- 所属课程 -->
         <el-table-column
           prop="belongCourseName"
@@ -109,6 +98,30 @@
             >
               {{ scope.row.isEnd === 0 ? '未截止' : '已截止' }}
             </el-tag>
+          </template>
+        </el-table-column>
+
+        <!-- 提交人数 -->
+        <el-table-column
+          prop="personCount"
+          label="已交人数"
+          align="center"
+          :width="flexColumnWidth(batchList, '提交人数', 'personCount')"
+        >
+          <template v-slot="scope">
+            {{ scope.row.personCount }} / {{ scope.row.totalCount }}
+          </template>
+        </el-table-column>
+
+        <!-- 批次文件总大小 -->
+        <el-table-column
+          prop="sizeOfDirectory"
+          label="文件体积"
+          align="center"
+          :width="flexColumnWidth(batchList, '文件体积', 'sizeOfDirectory')"
+        >
+          <template v-slot="scope">
+            {{ handleDirectorySize(scope.row.sizeOfDirectory) }}
           </template>
         </el-table-column>
 
@@ -147,6 +160,7 @@
 
           </template>
         </el-table-column>
+
       </el-table>
       <!-- 批次详情表格分页插件 -->
       <el-row>
@@ -226,8 +240,21 @@
           <el-table-column
             prop="createTime"
             label="提交时间"
+            :width="flexColumnWidth(taskDetailsList, '提交时间', 'createTime')"
             align="center"
           />
+
+          <!-- 批次文件总大小 -->
+          <el-table-column
+            prop="fileSize"
+            label="文件体积"
+            align="center"
+            :width="flexColumnWidth(taskDetailsList, '文件体积', 'fileSize')"
+          >
+            <template v-slot="scope">
+              {{ handleDirectorySize(scope.row.fileSize) }}
+            </template>
+          </el-table-column>
 
           <!-- 操作 -->
           <el-table-column
@@ -322,7 +349,7 @@
                 size="small"
                 icon="el-icon-mail"
                 :disabled="scope.row.isEnd === 0"
-                @click="handleRemind(scope.row.id)"
+                @click="handleRemindUser(scope.row.id)"
               >提醒TA
               </el-button>
             </template>
@@ -366,6 +393,7 @@ import batchApi from '@/api/batch'
 import taskApi from '@/api/task'
 import userApi from '@/api/user'
 import taskDetailsApi from '@/api/taskDetails'
+import emailApi from '@/api/emailApi'
 
 export default {
   name: 'TaskDetails',
@@ -402,7 +430,7 @@ export default {
       },
       taskDetailsDialogVisible: false, // 作业详情对话框是否可见
       noCommitDialogVisible: false, // 未见人员对话框是否可见
-      taskDetailsList: [],
+      taskDetailsList: [], // 作业详情列表
       courseList: [], // 课程列表，用于下拉框
       batchList: [], // 批次列表
       userList: [] // 未交人员列表
@@ -412,9 +440,45 @@ export default {
     // 获取课程列表
     this.getCourseList()
   },
+  computed: {
+
+  },
   methods: {
+    // 处理文件大小在列表中的显示
+    handleDirectorySize(fileSize) {
+      if (fileSize === 0) {
+        return '无文件'
+      }
+      if (fileSize >= 1048576) {
+        return (fileSize / (1024 * 1024)).toFixed(2) + ' MB'
+      }
+      if (fileSize >= 1024) {
+        return (fileSize / 1024).toFixed(2) + ' KB'
+      }
+    },
+    // 根据批次和用户id，提醒单个用户
+    handleRemindUser(userId) {
+      emailApi.remindUser({ userId, batchId: this.searchNoCommitUser.belongBatchId }).then(response => {
+        if (response.code === 800) {
+          this.$message({
+            type: 'error',
+            message: response.msg
+          })
+          // 刷新课程和批次列表
+          this.refreshCourseAndBatch()
+          return
+        }
+        this.$message({
+          type: 'success',
+          message: response.msg
+        })
+      })
+    },
     // 根据批次id查询未交人员
     handleQueryNoCommit(batchId) {
+      // 每次打开未交人员表格时，清空搜索条件
+      this.searchNoCommitUser.studentName = ''
+      // 将传入的batchId赋值给未交人员查询条件对象
       this.searchNoCommitUser.belongBatchId = batchId
       this.freshNoCommitUserList(1)
     },
@@ -570,11 +634,14 @@ export default {
         this.taskDetailsPageInfo.total = data.total
         this.taskDetailsPageInfo.page = data.current
         this.taskDetailsList = data.records
+        console.log(this.taskDetailsList)
         this.taskDetailsDialogVisible = true
       })
     },
     // 点击查看详情按钮后弹出作业详情对话框，显示出表单
     handleQueryTaskDetails(batchId) {
+      // 清空查询已交的查询条件
+      this.searchTaskDetails.studentName = ''
       // 将要查询的批次id赋值给作业详情查询对象的属性中
       this.searchTaskDetails.belongBatchId = batchId
       // 获取批次下的作业详情列表
