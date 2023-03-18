@@ -39,6 +39,14 @@ const actions = {
     return new Promise((resolve, reject) => {
       userApi.login({ username: username.trim(), password: password })
         .then(response => {
+          if (response.code === 800) {
+            Message({
+              message: response.msg,
+              type: 'error'
+            })
+            reject()
+            return
+          }
           const { data } = response
           commit('SET_TOKEN', data.token)
           setToken(data.token)

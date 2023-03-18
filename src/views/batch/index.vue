@@ -396,7 +396,6 @@ export default {
     handleEdit(batchId) {
       batchApi.getBatchById(batchId).then(response => {
         const { data } = response
-        // this.batch = data
         this.batch.id = data.id
         this.batch.batchName = data.batchName
         this.batch.description = data.description
