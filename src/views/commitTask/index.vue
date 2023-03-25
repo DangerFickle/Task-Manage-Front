@@ -172,7 +172,7 @@
       >
         <i class="el-icon-upload" />
         <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <div slot="tip" class="el-upload__tip" style="font-size: 15px">上传的文件不得超过30MB！</div>
+        <div slot="tip" class="el-upload__tip" style="font-size: 15px">上传的文件不得超过50MB！</div>
       </el-upload>
     </el-dialog>
 
@@ -284,10 +284,10 @@ export default {
     },
     handleCommit({ file }) {
       // 判断文件大小
-      if (file.size > 30 * 1024 * 1024) {
+      if (file.size > 50 * 1024 * 1024) {
         this.$message({
           type: 'error',
-          message: '作业文件不得超过30MB，请重新选择'
+          message: '作业文件不得超过50MB，请重新选择'
         })
         return
       }
