@@ -176,7 +176,7 @@
       </el-row>
     </el-row>
 
-    <!-- 作业提交情况弹窗 -->
+    <!-- 查看已交人员弹窗 -->
     <el-dialog title="作业提交情况" :visible.sync="taskDetailsDialogVisible" width="70%" center>
       <el-row>
         <div class="search-div">
@@ -322,7 +322,7 @@
             align="center"
           >
             <template slot-scope="scope">
-              {{ (taskDetailsPageInfo.page - 1) * taskDetailsPageInfo.pageSize + scope.$index + 1 }}
+              {{ (noCommitPageInfo.page - 1) * noCommitPageInfo.pageSize + scope.$index + 1 }}
             </template>
           </el-table-column>
           <!-- 学生姓名 -->
@@ -380,14 +380,14 @@
       center
     >
       <!-- 下载环形进度条 -->
-      <el-progress type="circle" :percentage="percentage" style="margin: -20px 0 0 20px" />
+      <el-progress type="circle" :percentage="percentage" style="margin: -20px 0 0 20px"/>
     </el-dialog>
   </div>
 </template>
 
 <script>
 // 处理表格的列对内容自适应
-import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
+import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
 import taskApi from '@/api/task'
@@ -440,9 +440,7 @@ export default {
     // 获取课程列表
     this.getCourseList()
   },
-  computed: {
-
-  },
+  computed: {},
   methods: {
     // 处理文件大小在列表中的显示
     handleDirectorySize(fileSize) {
@@ -458,7 +456,7 @@ export default {
     },
     // 根据批次和用户id，提醒单个用户
     handleRemindUser(userId) {
-      emailApi.remindUser({ userId, batchId: this.searchNoCommitUser.belongBatchId }).then(response => {
+      emailApi.remindUser({userId, batchId: this.searchNoCommitUser.belongBatchId}).then(response => {
         if (response.code === 800) {
           this.$message({
             type: 'error',
@@ -493,8 +491,10 @@ export default {
           this.$message.error(response.msg)
           return
         }
+        console.log(response)
         this.noCommitPageInfo.total = response.data.total
         this.noCommitPageInfo.page = response.data.current
+        console.log(this.noCommitPageInfo)
         this.userList = response.data.records
         this.noCommitDialogVisible = true // 打开未交人员对话框
       })
@@ -611,7 +611,7 @@ export default {
           this.batchList = []
           return
         }
-        const { data } = response
+        const {data} = response
         this.batchPageInfo.total = data.total
         this.batchPageInfo.page = data.current
         this.batchList = data.records
@@ -630,7 +630,7 @@ export default {
           this.fetchBatchByCourseId()
           return
         }
-        const { data } = response
+        const {data} = response
         this.taskDetailsPageInfo.total = data.total
         this.taskDetailsPageInfo.page = data.current
         this.taskDetailsList = data.records
