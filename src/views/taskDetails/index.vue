@@ -491,10 +491,8 @@ export default {
           this.$message.error(response.msg)
           return
         }
-        console.log(response)
         this.noCommitPageInfo.total = response.data.total
         this.noCommitPageInfo.page = response.data.current
-        console.log(this.noCommitPageInfo)
         this.userList = response.data.records
         this.noCommitDialogVisible = true // 打开未交人员对话框
       })
