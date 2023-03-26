@@ -252,7 +252,7 @@
             :width="flexColumnWidth(taskDetailsList, '文件体积', 'fileSize')"
           >
             <template v-slot="scope">
-              {{ handleDirectorySize(scope.row.fileSize) }}
+              {{ handleDirectorySize(scope.row.fileSize) ? handleDirectorySize(scope.row.fileSize) : '无文件' }}
             </template>
           </el-table-column>
 
@@ -380,14 +380,14 @@
       center
     >
       <!-- 下载环形进度条 -->
-      <el-progress type="circle" :percentage="percentage" style="margin: -20px 0 0 20px"/>
+      <el-progress type="circle" :percentage="percentage" style="margin: -20px 0 0 20px" />
     </el-dialog>
   </div>
 </template>
 
 <script>
 // 处理表格的列对内容自适应
-import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
+import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
 import taskApi from '@/api/task'
@@ -440,7 +440,6 @@ export default {
     // 获取课程列表
     this.getCourseList()
   },
-  computed: {},
   methods: {
     // 处理文件大小在列表中的显示
     handleDirectorySize(fileSize) {
@@ -456,7 +455,7 @@ export default {
     },
     // 根据批次和用户id，提醒单个用户
     handleRemindUser(userId) {
-      emailApi.remindUser({userId, batchId: this.searchNoCommitUser.belongBatchId}).then(response => {
+      emailApi.remindUser({ userId, batchId: this.searchNoCommitUser.belongBatchId }).then(response => {
         if (response.code === 800) {
           this.$message({
             type: 'error',
@@ -503,15 +502,10 @@ export default {
       taskApi.downloadTaskFile(taskId, this).then(response => {
         // 检查下载文件时是否有后端传来的异常信息
         if (response.headers['exception']) {
-          let msg = response.headers['exception']
-          if (msg === 'task not exist') {
-            msg = '该作业不存在，无法下载'
+          const msg = decodeURIComponent(response.headers['exception'])
+          if (msg === '该作业不存在，无法下载') {
             // 重新获取作业列表
             this.fetchTaskDetailsByBatchId(1)
-          } else if (msg === 'task batch not end') {
-            msg = '所属批次还未截止，无法下载' // 严格来讲不需要这个判断，因为前端在批次未截止时已经禁用了下载按钮
-          } else if (msg === 'task file not exist') {
-            msg = '该作业文件不存在，文件系统中被人为删除了'
           }
           this.$message.error(msg)
           // 重置环形进度条百分比为0
@@ -609,7 +603,7 @@ export default {
           this.batchList = []
           return
         }
-        const {data} = response
+        const { data } = response
         this.batchPageInfo.total = data.total
         this.batchPageInfo.page = data.current
         this.batchList = data.records
@@ -628,11 +622,10 @@ export default {
           this.fetchBatchByCourseId()
           return
         }
-        const {data} = response
+        const { data } = response
         this.taskDetailsPageInfo.total = data.total
         this.taskDetailsPageInfo.page = data.current
         this.taskDetailsList = data.records
-        console.log(this.taskDetailsList)
         this.taskDetailsDialogVisible = true
       })
     },
