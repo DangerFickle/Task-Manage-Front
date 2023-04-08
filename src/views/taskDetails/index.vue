@@ -290,7 +290,7 @@
     </el-dialog>
 
     <!-- 查看未交人员弹窗 -->
-    <el-dialog title="未交人员" :visible.sync="noCommitDialogVisible" width="50%" style="margin-top: -70px" center>
+    <el-dialog title="未交人员" :visible.sync="notCommitDialogVisible" width="50%" style="margin-top: -70px" center>
       <el-row style="margin-bottom: 10px">
         <div class="search-div">
           <el-form label-width="70px" size="medium" style="margin-bottom: -22px" inline>
@@ -304,7 +304,11 @@
               <el-button type="primary" icon="el-icon-search" size="small" @click="freshNoCommitUserList()">搜索
               </el-button>
             </el-form-item>
+            <el-form-item>
+              <el-button type="primary" icon="el-icon-document" size="small" @click="exportNotCommit()">导出Excel</el-button>
+            </el-form-item>
           </el-form>
+
         </div>
       </el-row>
 
@@ -393,7 +397,8 @@ import batchApi from '@/api/batch'
 import taskApi from '@/api/task'
 import userApi from '@/api/user'
 import taskDetailsApi from '@/api/taskDetails'
-import emailApi from '@/api/emailApi'
+import emailApi from '@/api/email'
+import excelApi from '@/api/excel'
 
 export default {
   name: 'TaskDetails',
@@ -429,7 +434,7 @@ export default {
         belongBatchId: ''
       },
       taskDetailsDialogVisible: false, // 作业详情对话框是否可见
-      noCommitDialogVisible: false, // 未见人员对话框是否可见
+      notCommitDialogVisible: false, // 未见人员对话框是否可见
       taskDetailsList: [], // 作业详情列表
       courseList: [], // 课程列表，用于下拉框
       batchList: [], // 批次列表
@@ -441,6 +446,21 @@ export default {
     this.getCourseList()
   },
   methods: {
+    exportNotCommit() {
+      excelApi.exportNotCommit(this.searchNoCommitUser, this).then(response => {
+        // 检查下载文件时是否有后端传来的异常信息
+        if (response.headers['exception']) {
+          const msg = decodeURIComponent(response.headers['exception'])
+          // 关闭未交人员弹窗
+          this.notCommitDialogVisible = false
+          // 刷新批次列表
+          this.refreshCourseAndBatch()
+          this.$message.error(msg)
+          return
+        }
+        this.handleDownload(response)
+      })
+    },
     // 处理文件大小在列表中的显示
     handleDirectorySize(fileSize) {
       if (fileSize === 0) {
@@ -493,7 +513,7 @@ export default {
         this.noCommitPageInfo.total = response.data.total
         this.noCommitPageInfo.page = response.data.current
         this.userList = response.data.records
-        this.noCommitDialogVisible = true // 打开未交人员对话框
+        this.notCommitDialogVisible = true // 打开未交人员对话框
       })
     },
     // 下载单个文件
@@ -503,7 +523,7 @@ export default {
         // 检查下载文件时是否有后端传来的异常信息
         if (response.headers['exception']) {
           const msg = decodeURIComponent(response.headers['exception'])
-          if (msg === '该作业不存在，无法下载') {
+          if (msg === '该作业不存在') {
             // 重新获取作业列表
             this.fetchTaskDetailsByBatchId(1)
           }
@@ -522,33 +542,19 @@ export default {
       taskApi.downloadBatchFiles(batchId, this).then(response => {
         // 检查下载文件时是否有后端传来的异常信息
         if (response.headers['exception']) {
-          let msg = response.headers['exception']
-          if (msg === 'batch not exist') {
-            msg = '该批次不存在，无法下载'
+          const msg = decodeURIComponent(response.headers['exception'])
+          if (msg === '该批次不存在' || msg === '该批次还未截止' || msg === '该批次下还没有作业') {
             // 刷新批次列表
             this.fetchBatchByCourseId()
-          } else if (msg === 'batch not end') {
-            msg = '该批次还未截止，无法下载'
-            // 刷新批次列表
-            this.fetchBatchByCourseId()
-          } else if (msg === 'course is disabled') {
-            msg = '所属课程已被禁用，无法下载'
+          } else if (msg === '所属课程已被禁用') {
             // 重置课程下拉选择框
             this.searchBatch.belongCourseId = ''
             // 刷新课程列表
             this.getCourseList()
             // 重置批次列表
             this.batchList = []
-          } else if (msg === 'no task') {
-            msg = '该批次下还没有作业'
-            // 刷新批次列表
-            this.fetchBatchByCourseId()
-          } else if (msg === 'batch folder not exist') {
-            msg = '该批次文件夹不存在'
-          } else {
-            msg = ''
           }
-          if (msg !== '') {
+          if (msg !== undefined && msg !== '') {
             this.$message.error(msg)
             // 重置环形进度条百分比为0
             this.percentage = 0

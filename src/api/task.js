@@ -45,6 +45,23 @@ export default {
       }
     })
   },
+  downloadSelfTaskFile(belongBatchId, taskDetailComponent) {
+    return request({
+      url: `/task/downloadSelfTask/${belongBatchId}`,
+      method: 'get',
+      responseType: 'blob',
+      onDownloadProgress(progressEvent) {
+        // 更新进度条
+        const progressBar = Math.round(progressEvent.loaded / progressEvent.total * 100);
+        if (progressBar >= 99) {
+          taskDetailComponent.percentage = 99
+          taskDetailComponent.downloadPercentageDialogVisible = false //  关闭下载环形进度条的弹窗
+        } else {
+          taskDetailComponent.percentage = progressBar
+        }
+      }
+    })
+  },
   // 根据批次id，下载全部文件, 传入taskDetailComponent组件实例，用于更新进度条
   downloadBatchFiles(batchId, taskDetailComponent) {
     return request({

@@ -113,7 +113,7 @@
         <el-table-column
           label="操作"
           align="center"
-          width="120"
+          width="240"
         >
           <!-- isEnd为1时禁用，为0时可用 -->
           <template v-slot="scope">
@@ -135,6 +135,15 @@
               :disabled="scope.row.isEnd === 1 || scope.row.isCommit === 0"
               @click="handleCancelCommit(scope.row.id)"
             >取消提交
+            </el-button>
+
+            <el-button
+              size="small"
+              icon="el-icon-download"
+              type="primary"
+              :disabled="scope.row.isCommit === 0"
+              @click="handleDownloadSelf(scope.row.id)"
+            >下载文件
             </el-button>
           </template>
         </el-table-column>
@@ -188,6 +197,19 @@
       <!-- 上传进度条 -->
       <el-progress :text-inside="true" :stroke-width="24" :percentage="percentage" status="success" style="margin-top: -15px; margin-bottom: -20px"/>
     </el-dialog>
+
+    <el-dialog
+      title="正在下载，请稍后..."
+      :show-close="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :visible.sync="downloadPercentageDialogVisible"
+      width="220px"
+      center
+    >
+      <!-- 下载环形进度条 -->
+      <el-progress type="circle" :percentage="percentage" style="margin: -20px 0 0 20px" />
+    </el-dialog>
   </div>
 </template>
 
@@ -219,6 +241,7 @@ export default {
       batchList: [],
       updateDialogVisible: false, // 上传作业弹窗
       percentageDialogVisible: false, // 上传进度弹窗
+      downloadPercentageDialogVisible: false, // 下载进度弹窗
       commitParameters: {
         belongBatchId: ''
       } // 提交作业时的附带参数
@@ -228,6 +251,42 @@ export default {
     this.getCourseListOnlyEnabled()
   },
   methods: {
+    handleDownloadSelf(batchId) {
+      this.downloadPercentageDialogVisible = true
+      taskApi.downloadSelfTaskFile(batchId, this).then(response => {
+        // 检查下载文件时是否有后端传来的异常信息
+        if (response.headers['exception']) {
+          const msg = decodeURIComponent(response.headers['exception'])
+          // 关闭未交人员弹窗
+          this.notCommitDialogVisible = false
+          // 刷新批次列表
+          this.refreshCourseAndBatch()
+          this.$message.error(msg)
+          return
+        }
+        // 下载文件
+        this.handleDownload(response)
+      })
+    },
+    // 处理下载逻辑，传入response对象
+    handleDownload(response) {
+      // 由于后台返回文件名称是通过response返回的
+      // 因此需要从response headers中content-disposition响应头中获取文件名称fileName
+      let fileName = response.headers['content-disposition']
+      fileName = fileName.split('=')[1]
+      const url = window.URL.createObjectURL(new Blob([response.data], {
+        type: 'application/octet-stream;charset=UTF-8'
+      }))
+      const link = document.createElement('a')
+      link.style.display = 'none'
+      link.href = url
+      // decodeURIComponent解决文件名的url转码问题
+      link.setAttribute('download', decodeURIComponent(fileName))
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      this.percentage = 0 // 重置环形进度条百分比为0
+    },
     // 取消提交作业
     handleCancelCommit(batchId) {
       this.$confirm(`确认要取消提交吗？此操作不可逆！`, '警告', {
