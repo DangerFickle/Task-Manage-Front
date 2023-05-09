@@ -62,29 +62,19 @@ export const exclusiveRoute = [
       }
     ]
   },
-
   // {
-  //   path: '/jobManage',
+  //   path: '/group',
   //   component: Layout,
-  //   redirect: '/jobManage/courseManage',
-  //   name: 'jobManage',
-  //   meta: {
-  //     title: '作业管理',
-  //     icon: 'el-icon-folder-opened',
-  //     role: ['system', 'normal']
-  //   },
   //   children: [
   //     {
-  //       path: 'courseManage',
-  //       component: () => import('@/views/course/index'), // Parent router-view
-  //       name: 'courseManage',
-  //       meta: { title: '课程管理', role: ['system', 'normal'], icon: 'el-icon-reading' }
-  //     },
-  //     {
-  //       path: 'batchManage',
-  //       component: () => import('@/views/batch/index'),
-  //       name: 'batchManage',
-  //       meta: { title: '批次管理', role: ['system', 'normal'], icon: 'el-icon-document-copy' }
+  //       path: 'index',
+  //       name: 'Group',
+  //       component: () => import('@/views/group/index'),
+  //       meta: {
+  //         title: '我的群组',
+  //         icon: 'el-icon-s-cooperation',
+  //         role: ['normal', 'user', 'system']
+  //       }
   //     }
   //   ]
   // },

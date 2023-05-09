@@ -1,17 +1,15 @@
 import { exclusiveRoute, constantRoutes } from '@/router'
-function hasPermission(roleName, router) {
-  if (router.meta && router.meta.role) {
-    let flag = false
-    router.meta.role.forEach(routeRoleName => {
+
+function hasPermission(roleName, route) {
+  let flag = false
+  if (route.meta && route.meta.role) {
+    route.meta.role.forEach(routeRoleName => {
       if (routeRoleName === roleName) {
         flag = true
-        return flag
       }
     })
-    return flag
-  } else {
-    return true
   }
+  return flag
 }
 
 const state = {
@@ -21,22 +19,26 @@ const state = {
 const actions = {
   generateRoutes({ commit }, data) {
     const { roleName } = data
-    const addRouters = exclusiveRoute.filter(router => {
-      if (hasPermission(roleName, router)) {
-        if (router.children && router.children.length > 0) {
-          router.children = router.children.filter(child => {
-            if (hasPermission(roleName, child)) {
-              return child
-            }
-            return false
-          })
-          return router
-        } else {
-          return router
+
+    const addRouters = []
+
+    exclusiveRoute.forEach(route => {
+      const oldChildren = route.children
+      const newChildren = []
+      if (oldChildren && oldChildren.length > 0) {
+
+        oldChildren.forEach(child => {
+          if (hasPermission(roleName, child)) {
+            newChildren.push(child)
+          }
+        })
+        if (newChildren.length !== 0) {
+          route.children = newChildren
+          addRouters.push(route)
         }
       }
-      return false
     })
+
     commit('ADDROUTES', addRouters)
   }
 }

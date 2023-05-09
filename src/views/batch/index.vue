@@ -340,6 +340,7 @@ export default {
     // 添加/修改对话框关闭时触发，重置表单，重置检验效果
     dialogClose() {
       this.$refs.batchForm.resetFields()
+      this.resetBatch()
     },
     changeSelectForm() {
 

@@ -57,14 +57,16 @@ export default {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
-    async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$message({
-        message: '登出成功',
-        type: 'success',
-        duration: 1500
+    logout() {
+      this.$store.dispatch('user/logout').then(() => {
+        this.$message({
+          message: '登出成功',
+          type: 'success',
+          duration: 1500
+        })
+        this.$router.push(`/login?redirect=${this.$route.fullPath}`)
       })
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+
     }
   }
 }

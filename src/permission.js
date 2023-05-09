@@ -12,6 +12,7 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 const whiteList = ['/login'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
+
   // start progress bar
   NProgress.start()
 
@@ -32,8 +33,8 @@ router.beforeEach(async(to, from, next) => {
         next()
       } else {
         try {
-          store.dispatch('user/getInfo').then(response => { // 拉取info
-            const roleName = response.roleName
+          store.dispatch('user/getInfo').then(userInfo => { // 拉取info
+            const roleName = userInfo.roleName
             store.dispatch('routes/generateRoutes', { roleName }).then(() => { // 生成可访问的路由表
               store.getters.addRouters.push({ path: '*', redirect: '/404', hidden: true })
               const finalRoutes = constantRoutes.concat(store.getters.addRouters)
@@ -43,8 +44,8 @@ router.beforeEach(async(to, from, next) => {
             })
           }).catch(err => {
             // console.log(err)
+            next()
           })
-          next()
         } catch (error) {
           // remove token and go to login page to re-login
           await store.dispatch('user/resetToken')

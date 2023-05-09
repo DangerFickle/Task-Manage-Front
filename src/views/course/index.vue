@@ -1,6 +1,7 @@
 <template>
   <div class="app-container">
     <div class="title">课程管理</div>
+
     <el-row>
       <div class="search-div">
         <el-form label-width="70px" size="medium">
@@ -85,7 +86,7 @@
         style="margin-top: 20px"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection"/>
+<!--        <el-table-column type="selection"/>-->
         <el-table-column
           label="序号"
           width="70"

@@ -177,7 +177,7 @@
     </el-row>
 
     <!-- 查看已交人员弹窗 -->
-    <el-dialog title="作业提交情况" :visible.sync="taskDetailsDialogVisible" width="70%" center>
+    <el-dialog title="作业提交情况" :visible.sync="taskDetailsDialogVisible" width="70%" top="15px" center>
       <el-row>
         <div class="search-div">
           <el-form label-width="70px" size="medium" style="margin-bottom: -20px" inline>
@@ -290,7 +290,7 @@
     </el-dialog>
 
     <!-- 查看未交人员弹窗 -->
-    <el-dialog title="未交人员" :visible.sync="notCommitDialogVisible" width="50%" style="margin-top: -70px" center>
+    <el-dialog title="未交人员" :visible.sync="notCommitDialogVisible" width="50%" top="15px" center>
       <el-row style="margin-bottom: 10px">
         <div class="search-div">
           <el-form label-width="70px" size="medium" style="margin-bottom: -22px" inline>
@@ -305,7 +305,8 @@
               </el-button>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" icon="el-icon-document" size="small" @click="exportNotCommit()">导出Excel</el-button>
+              <el-button type="primary" icon="el-icon-document" size="small" @click="exportNotCommit()">导出Excel
+              </el-button>
             </el-form-item>
           </el-form>
 
@@ -374,6 +375,7 @@
       </el-row>
     </el-dialog>
 
+    <!-- 文件下载进度条 -->
     <el-dialog
       title="正在下载，请稍后..."
       :show-close="false"
