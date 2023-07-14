@@ -154,7 +154,7 @@
               size="small"
               icon="el-icon-view"
               type="primary"
-              @click="handleQueryNoCommit(scope.row.id)"
+              @click="handleQueryNoCommit(scope.row)"
             >查看未交
             </el-button>
 
@@ -353,7 +353,7 @@
                 type="primary"
                 size="small"
                 icon="el-icon-mail"
-                :disabled="scope.row.isEnd === 0"
+                :disabled="currentBatch.isEnd === 1 || !scope.row.hasEmail"
                 @click="handleRemindUser(scope.row.id)"
               >提醒TA
               </el-button>
@@ -386,14 +386,14 @@
       center
     >
       <!-- 下载环形进度条 -->
-      <el-progress type="circle" :percentage="percentage" style="margin: -20px 0 0 20px" />
+      <el-progress type="circle" :percentage="percentage" style="margin: -20px 0 0 20px"/>
     </el-dialog>
   </div>
 </template>
 
 <script>
 // 处理表格的列对内容自适应
-import { flexColumnWidthFN } from '@/mixins/flexColumnWidth'
+import {flexColumnWidthFN} from '@/mixins/flexColumnWidth'
 import courseApi from '@/api/course'
 import batchApi from '@/api/batch'
 import taskApi from '@/api/task'
@@ -435,6 +435,7 @@ export default {
         studentName: '',
         belongBatchId: ''
       },
+      currentBatch: {}, // 当前正在查看的批次
       taskDetailsDialogVisible: false, // 作业详情对话框是否可见
       notCommitDialogVisible: false, // 未见人员对话框是否可见
       taskDetailsList: [], // 作业详情列表
@@ -477,7 +478,7 @@ export default {
     },
     // 根据批次和用户id，提醒单个用户
     handleRemindUser(userId) {
-      emailApi.remindUser({ userId, batchId: this.searchNoCommitUser.belongBatchId }).then(response => {
+      emailApi.remindUser({userId, batchId: this.searchNoCommitUser.belongBatchId}).then(response => {
         if (response.code === 800) {
           this.$message({
             type: 'error',
@@ -494,11 +495,13 @@ export default {
       })
     },
     // 根据批次id查询未交人员
-    handleQueryNoCommit(batchId) {
+    handleQueryNoCommit(batch) {
       // 每次打开未交人员表格时，清空搜索条件
       this.searchNoCommitUser.studentName = ''
       // 将传入的batchId赋值给未交人员查询条件对象
-      this.searchNoCommitUser.belongBatchId = batchId
+      this.searchNoCommitUser.belongBatchId = batch.id
+      // 当前正在查看的批次
+      this.currentBatch = batch
       this.freshNoCommitUserList(1)
     },
     // 根据批次id查询未交人员
@@ -611,7 +614,7 @@ export default {
           this.batchList = []
           return
         }
-        const { data } = response
+        const {data} = response
         this.batchPageInfo.total = data.total
         this.batchPageInfo.page = data.current
         this.batchList = data.records
@@ -630,7 +633,7 @@ export default {
           this.fetchBatchByCourseId()
           return
         }
-        const { data } = response
+        const {data} = response
         this.taskDetailsPageInfo.total = data.total
         this.taskDetailsPageInfo.page = data.current
         this.taskDetailsList = data.records

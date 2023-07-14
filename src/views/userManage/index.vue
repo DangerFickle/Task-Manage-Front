@@ -172,7 +172,7 @@
           <el-input v-model.trim="user.email" />
         </el-form-item>
 
-        <el-form-item label="角色:" prop="roleId">
+        <el-form-item v-if="user.roleId !== '1'" label="角色:" prop="roleId">
           <el-select
             v-model.trim="user.roleId"
             placeholder="请选择角色"
@@ -185,17 +185,6 @@
             />
           </el-select>
         </el-form-item>
-
-        <!--        <el-form-item label="角色:" prop="roleId">-->
-        <!--          <el-radio-group v-model="user.roleId">-->
-        <!--            <el-radio-->
-        <!--              v-for="role in roleList"-->
-        <!--              :key="role.id"-->
-        <!--              :label="role.id"-->
-        <!--            >{{ role.roleName }}-->
-        <!--            </el-radio>-->
-        <!--          </el-radio-group>-->
-        <!--        </el-form-item>-->
       </el-form>
 
       <span slot="footer" class="dialog-footer">
