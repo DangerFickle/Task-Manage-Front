@@ -94,7 +94,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       {
         path: "index",
         name: "GroupTask",
-        component: () => import("@/views/groupTask/temp.vue"),
+        component: () => import("@/views/groupTask/index.vue"),
         meta: {
           title: "群组作业",
           elIcon: "ChatLineSquare"
@@ -113,7 +113,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       {
         path: "index",
         name: "Group",
-        component: () => import("@/views/myGroup/temp.vue"),
+        component: () => import("@/views/myGroup/index.vue"),
         meta: {
           title: "我的群组",
           elIcon: "ChatLineRound"

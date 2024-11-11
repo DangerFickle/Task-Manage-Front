@@ -298,10 +298,10 @@ const userStore = useUserStoreHook();
 
 const searchUser = reactive<{
   name: string,
-  groupId: string
+  courseId: string
 }>({
   name: "",
-  groupId: ""
+  courseId: ""
 });
 
 // 分页信息
@@ -561,10 +561,10 @@ function addUserToGroup(row: User) {
 
 }
 
-// 获取用户列表
+// 获取未加入任何群组的用户列表
 function freshUserList(page: number = 1) {
   if (page) userPageInfo.page = page;
-  searchUser.groupId = group.id
+  searchUser.courseId = searchGroup.belongCourseId
   userApi.getUserListWithoutMember(searchUser, userPageInfo.page, userPageInfo.pageSize).then(res => {
     // 过滤掉组内成员
     userList.splice(0, userList.length, ...res.data.records)
