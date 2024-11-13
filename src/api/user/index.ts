@@ -84,6 +84,14 @@ export default {
       params: searchUserInfo
     });
   },
+  // 获取用户信息列表，不分页
+  getUserListWithoutMemberNotPage(searchUserInfo: User) {
+    return request<ApiResponse<Page<User>>>({
+      url: `/user/listGroupMemberNotPage`,
+      method: "get",
+      params: searchUserInfo
+    });
+  },
   // 添加用户
   addUser(userForm: User) {
     return request<ApiResponse<null>>({

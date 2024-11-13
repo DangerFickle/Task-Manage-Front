@@ -5,13 +5,14 @@ export interface GroupMember extends User {
 }
 
 export interface Group {
-  id: string;
-  name: string;
-  leader: string;
-  belongCourse: string;
-  alreadyMember: undefined,
-  groupMaxMemberSize: undefined,
+  id: string
+  name: string
+  leader: string
+  leaderName: string
+  belongCourse: string
+  alreadyMember: undefined
+  groupMaxMemberSize: undefined
   // members: Array<GroupMember>
-  createTime: string;
-  updateTime: string;
+  createTime: string
+  updateTime: string
 }

@@ -417,7 +417,7 @@ function freshTransMemberList(page: number = 1) {
   userApi.getTransMemberList(transMemberPageInfo).then(res => {
     const {data, msg} = res
     if (res.code === 200) {
-      transMemberList.splice(0, transMemberList.length, ...data.records)
+      transMemberList.splice(0, transMemberList.length, ...data.records.filter(m => m.id !== group.leader)) // 排除掉组长
       transMemberPageInfo.total = data.total
       openTransMembers.value = true
     } else {
@@ -519,7 +519,7 @@ function handleTransferLeader(user: User) {
         fetchGroup()
         openTransMembers.value = false
       } else {
-        ElMessage.success("转让失败")
+        ElMessage.error(res.msg)
       }
     })
   }).catch(() => {
